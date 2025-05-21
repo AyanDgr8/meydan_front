@@ -14,31 +14,39 @@ const DownloadFile = () => {
     const [data, setData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [queueNames, setQueueNames] = useState([]);
+    const [selectedQueue, setSelectedQueue] = useState('');
     const navigate = useNavigate();
-    const [user, setUser] = useState(null);
 
+    // Fetch queue names when component mounts
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const apiUrl = process.env.REACT_APP_API_URL;
-                const userResponse = await axios.get(`${apiUrl}/current-user`, {
-                    headers: { 
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                });
-                
-                setUser(userResponse.data);
-                console.log('User data:', userResponse.data);
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                navigate('/login');
-            }
-        };
+        fetchQueueNames();
+    }, []);
 
-        fetchUser();
-    }, [navigate]);
+    const fetchQueueNames = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/admin');
+                return;
+            }
+
+            const apiUrl = process.env.REACT_APP_API_URL;
+            const response = await axios.get(`${apiUrl}/download/queues`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.data && response.data.data) {
+                setQueueNames(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching queue names:', error);
+            setError('Error fetching queue names. Please try again.');
+        }
+    };
 
     // Filter data when search term changes
     useEffect(() => {
@@ -54,237 +62,180 @@ const DownloadFile = () => {
 
         const searchTermLower = searchTerm.toLowerCase();
         const filtered = data.filter(item => {
-            // Helper function to safely check if a value includes the search term based on type
-            const safeIncludes = (value, searchTerm, type = 'string') => {
+            // Helper function to safely check if a value includes the search term
+            const safeIncludes = (value, searchTerm) => {
                 if (value === null || value === undefined) return false;
-                
-                switch(type) {
-                    case 'date':
-                        if (!value) return false;
-                        const dateStr = new Date(value).toLocaleDateString();
-                        return dateStr.toLowerCase().includes(searchTerm);
-                    case 'enum':
-                        return value.toLowerCase() === searchTerm;
-                    default:
-                        return value.toString().toLowerCase().includes(searchTerm);
+                if (value instanceof Date) {
+                    return value.toLocaleString().toLowerCase().includes(searchTerm);
                 }
+                return value.toString().toLowerCase().includes(searchTerm);
             };
 
-            // Search based on new schema fields
-            return (
-                safeIncludes(item.first_name, searchTermLower) ||
-                safeIncludes(item.middle_name, searchTermLower) ||
-                safeIncludes(item.last_name, searchTermLower) ||
-                safeIncludes(item.phone_no_primary, searchTermLower) ||
-                safeIncludes(item.phone_no_secondary, searchTermLower) ||
-                safeIncludes(item.whatsapp_num, searchTermLower) ||
-                safeIncludes(item.email_id, searchTermLower) ||
-                safeIncludes(item.gender, searchTermLower, 'enum') ||
-                safeIncludes(item.address, searchTermLower) ||
-                safeIncludes(item.country, searchTermLower) ||
-                safeIncludes(item.company_name, searchTermLower) ||
-                safeIncludes(item.designation, searchTermLower) ||
-                safeIncludes(item.website, searchTermLower) ||
-                safeIncludes(item.other_location, searchTermLower) ||
-                safeIncludes(item.contact_type, searchTermLower, 'enum') ||
-                safeIncludes(item.source, searchTermLower) ||
-                safeIncludes(item.disposition, searchTermLower, 'enum') ||
-                safeIncludes(item.QUEUE_NAME, searchTermLower) ||
-                safeIncludes(item.agent_name, searchTermLower) ||
-                safeIncludes(item.comment, searchTermLower) ||
-                safeIncludes(item.date_of_birth, searchTermLower, 'date') ||
-                safeIncludes(item.C_unique_id, searchTermLower)
-            );
+            // Search through all fields
+            return Object.entries(item).some(([key, value]) => {
+                // Skip internal fields
+                if (key.startsWith('_')) return false;
+                return safeIncludes(value, searchTermLower);
+            });
         });
 
         setFilteredData(filtered);
-    }, [searchTerm, data, user?.role]);
+    }, [searchTerm, data]);
+
+    // Add effect to fetch data when filters change
+    useEffect(() => {
+        if (isValidDateRange() && selectedQueue) {
+            fetchData();
+        }
+    }, [startDate, endDate, selectedQueue]);
 
     const isValidDateRange = () => {
-        if (!startDate || !endDate) return false;
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        return start <= end && !isNaN(start) && !isNaN(end);
+        return startDate && endDate && new Date(startDate) <= new Date(endDate);
     };
 
     const formatDateTime = (dateStr) => {
-        if (!dateStr) return '-';
-        const d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '-';
-        return d.toLocaleString('en-GB', {
-            day: '2-digit',
-            month: '2-digit',
+        if (!dateStr) return 'N/A';
+        const date = new Date(dateStr);
+        return date.toLocaleString('en-US', {
             year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
             hour: '2-digit',
             minute: '2-digit',
-            second: '2-digit'
+            hour12: true
         });
     };
 
     const formatTableValue = (value) => {
-        if (value === null || value === undefined) return '-';
-        if (value === '') return '-';
-        if (typeof value === 'string' && value.includes('T')) {
-            // Format datetime values
-            return formatDateTime(value);
-        }
-        return value;
+        if (value === null || value === undefined) return 'N/A';
+        if (value instanceof Date) return formatDateTime(value);
+        return value.toString();
     };
 
-    const getColumnOrder = () => {
-        return [
-            'first_name',
-            'middle_name',
-            'last_name',
-            'phone_no_primary',
-            'phone_no_secondary',
-            'whatsapp_num',
-            'email_id',
-            'date_of_birth',
-            'gender',
-            'address',
-            'country',
-            'company_name',
-            'designation',
-            'website',
-            'other_location',
-            'contact_type',
-            'source',
-            'disposition',
-            'QUEUE_NAME',
-            'agent_name',
-            'comment',
-            'scheduled_at',
-            'date_created',
-            'last_updated'
-        ];
-    };
+    const getColumnOrder = () => [
+        'C_unique_id',
+        'customer_name',
+        'phone_no_primary',
+        'phone_no_secondary',
+        'email_id',
+        'address',
+        'country',
+        'QUEUE_NAME',
+        'designation',
+        'disposition',
+        'agent_name',
+        'comment',
+        'date_created',
+        'last_updated'
+    ];
 
     const getColumnHeader = (key) => {
         const headers = {
-            'first_name': 'First Name',
-            'middle_name': 'Middle Name',
-            'last_name': 'Last Name',
-            'phone_no_primary': 'Primary Phone',
-            'phone_no_secondary': 'Secondary Phone',
-            'whatsapp_num': 'WhatsApp',
+            'C_unique_id': 'ID',
+            'customer_name': 'Customer Name',
+            'phone_no_primary': 'Phone',
+            'phone_no_secondary': 'Alternative Phone',
             'email_id': 'Email',
-            'date_of_birth': 'Date of Birth',
-            'gender': 'Gender',
             'address': 'Address',
             'country': 'Country',
-            'company_name': 'Company',
+            'QUEUE_NAME': 'Company Name',
             'designation': 'Designation',
-            'website': 'Website',
-            'other_location': 'Other Location',
-            'contact_type': 'Contact Type',
-            'source': 'Source',
             'disposition': 'Disposition',
-            'QUEUE_NAME': 'Queue Name',
             'agent_name': 'Agent',
             'comment': 'Comment',
-            'scheduled_at': 'Scheduled At',
-            'date_created': 'Created Date',
+            'date_created': 'Created At',
             'last_updated': 'Last Updated'
         };
         return headers[key] || key;
     };
 
     const fetchData = async () => {
+        if (!isValidDateRange()) {
+            setError('Please select a valid date range');
+            return;
+        }
+
+        if (!selectedQueue) {
+            setError('Please select a company name');
+            return;
+        }
+
         setLoading(true);
-        setError(null);
-        
+        setError('');
+
         try {
-            // Set the end time to end of day
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
 
             const apiUrl = process.env.REACT_APP_API_URL;
-            const response = await axios.get(`${apiUrl}/customers/date-range`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
+            const response = await axios.get(`${apiUrl}/download/customers`, {
                 params: {
-                    startDate: start.toISOString(),
-                    endDate: end.toISOString()
+                    startDate,
+                    endDate,
+                    queueName: selectedQueue
+                },
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
 
-            console.log('Response:', response.data);
-
-            if (response.data.success) {
-                const records = response.data.data || [];
-                setData(records);
-                
-                if (records.length === 0) {
-                    setError('No records found in the selected date range');
-                } else {
-                    console.log(`Found ${records.length} records between ${start.toLocaleString()} and ${end.toLocaleString()}`);
-                }
+            if (response.data && response.data.data) {
+                setData(response.data.data);
+                setFilteredData(response.data.data);
             } else {
-                setError(response.data.message || 'Error fetching data');
+                setData([]);
+                setFilteredData([]);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
-            setError(error.response?.data?.message || 'Error fetching data');
-            setData([]);
+            setError('Error fetching data. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        if (startDate && endDate) {
-            fetchData();
-        }
-    }, [startDate, endDate]); // Re-fetch when dates change
-
-    const handleDateChange = setter => e => {
+    const handleDateChange = (setter) => (e) => {
         setter(e.target.value);
     };
 
-    const handleScheduleddAtClick = (e) => {
-        e.preventDefault();
-        const now = new Date();
-        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
-            .toISOString()
-            .slice(0, 16);
-        e.target.value = localDateTime;
+    const handleQueueChange = (e) => {
+        setSelectedQueue(e.target.value);
+        setData([]);
+        setFilteredData([]);
     };
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!filteredData.length) {
             setError('No data available to download');
             return;
         }
 
         try {
-            const worksheet = XLSX.utils.json_to_sheet(filteredData.map(row => {
+            // Prepare data for Excel
+            const excelData = filteredData.map(row => {
                 const formattedRow = {};
                 getColumnOrder().forEach(key => {
-                    let value = row[key];
-                    // Format dates
-                    if (key === 'date_of_birth' || key === 'scheduled_at' || key === 'date_created' || key === 'last_updated') {
-                        value = value ? formatDateTime(value) : '';
-                    }
-                    // Format name fields
-                    if (['first_name', 'middle_name', 'last_name'].includes(key)) {
-                        value = value || '';
-                    }
-                    formattedRow[getColumnHeader(key)] = value;
+                    formattedRow[getColumnHeader(key)] = formatTableValue(row[key]);
                 });
                 return formattedRow;
-            }));
+            });
 
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Customer Data');
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(excelData);
 
-            // Generate filename with current date
-            const date = new Date();
-            const filename = `customer_data_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}.xlsx`;
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, 'Customer Data');
 
-            XLSX.writeFile(workbook, filename);
+            // Generate filename with date range and queue name
+            const filename = `${selectedQueue}_${startDate.split('T')[0]}_to_${endDate.split('T')[0]}.xlsx`;
+
+            // Save file
+            XLSX.writeFile(wb, filename);
         } catch (error) {
             console.error('Error downloading file:', error);
             setError('Error downloading file. Please try again.');
@@ -295,59 +246,55 @@ const DownloadFile = () => {
         setSearchTerm(e.target.value);
     };
 
-    // Check if user has permission based on role
-    const hasDownloadPermission = user && (
-        ['super_admin', 'it_admin', 'business_head'].includes(user.role) ||
-        (user.role === 'team_leader' && user.permissions && user.permissions.includes('download_data')) ||
-        (user.permissions && user.permissions.includes('download_data'))
-    );
-
-    if (!hasDownloadPermission) {
-        return <div className="error-message">You do not have permission to access this page.</div>;
-    }
-
-    // Show search for all roles, but with appropriate placeholder text
-    const getSearchPlaceholder = () => {
-        if (['super_admin', 'it_admin', 'business_head'].includes(user?.role)) {
-            return "Search across all data...";
-        }
-        return "Search within your team's data...";
-    };
-
     return (
         <div className="download-page">
-            <h2 className="download-heading">
-                {['super_admin', 'it_admin', 'business_head'].includes(user?.role) 
-                    ? 'Download All Customer Data' 
-                    : "Download Team's Customer Data"}
-            </h2>
+            <h2 className="download-heading">Download Customer Data</h2>
             
-            <div className="date-picker-container">
-                <div className="date-picker-wrapper">
-                    <label htmlFor="start-date">Start Date and Time *</label>
-                    <input
-                        id="start-date"
-                        type="datetime-local"
-                        value={startDate}
-                        onChange={handleDateChange(setStartDate)}
-                        className="datetime-input"
-                        required
-                    />
-                </div>
-                <div className="date-picker-wrapper">
-                    <label htmlFor="end-date">End Date and Time *</label>
-                    <input
-                        id="end-date"
-                        type="datetime-local"
-                        value={endDate}
-                        onChange={handleDateChange(setEndDate)}
-                        className="datetime-input"
-                        required
-                    />
+            <div className="filters-container">
+                <div className="date-picker-container">
+                    <div className="queue-select-wrapper">
+                        <label htmlFor="queue-select">Select Company Name *</label>
+                        <select
+                            id="queue-select"
+                            value={selectedQueue}
+                            onChange={handleQueueChange}
+                            className="queue-select"
+                            required
+                        >
+                            <option value="">Select a company</option>
+                            {queueNames.map((queue, index) => (
+                                <option key={index} value={queue.QUEUE_NAME}>
+                                    {queue.QUEUE_NAME}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="date-picker-wrapper">
+                        <label htmlFor="start-date">Start Date and Time *</label>
+                        <input
+                            id="start-date"
+                            type="datetime-local"
+                            value={startDate}
+                            onChange={handleDateChange(setStartDate)}
+                            className="datetime-input"
+                            required
+                        />
+                    </div>
+                    <div className="date-picker-wrapper">
+                        <label htmlFor="end-date">End Date and Time *</label>
+                        <input
+                            id="end-date"
+                            type="datetime-local"
+                            value={endDate}
+                            onChange={handleDateChange(setEndDate)}
+                            className="datetime-input"
+                            required
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* {error && <div className="error-message">{error}</div>} */}
+            {error && <div className="error-message">{error}</div>}
             
             {loading ? (
                 <div className="loading-message">Loading data...</div>
@@ -356,7 +303,7 @@ const DownloadFile = () => {
                     <div className="search-container">
                         <input
                             type="text"
-                            placeholder={getSearchPlaceholder()}
+                            placeholder="Search in results..."
                             value={searchTerm}
                             onChange={handleSearch}
                             className="search-input"
@@ -396,7 +343,13 @@ const DownloadFile = () => {
                 </>
             ) : (
                 <div className="no-data-message">
-                    {startDate && endDate ? 'No data available for the selected date range.' : 'Please select a date range to view data.'}
+                    {selectedQueue ? 
+                        (startDate && endDate ? 
+                            'No data available for the selected date range.' : 
+                            'Please select a date range to view data.'
+                        ) : 
+                        'Please select a company name to view data.'
+                    }
                 </div>
             )}
         </div>

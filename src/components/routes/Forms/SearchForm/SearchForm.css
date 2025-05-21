@@ -1,7 +1,7 @@
 /* src/components/routes/Forms/SearchForm/SearchForm.css */
 
 
-.list-containerr {
+.list-container {
   display: flex; /* Use flexbox */
   flex-direction: column; /* Stack children vertically */
   overflow-y: auto;
@@ -10,22 +10,21 @@
   border-radius: 5px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin: auto;
-  width: 95%;
+  width: 90%;
   text-align: left;
   transition: all 0.3s ease-in-out;
 }
 
-.list_form_headiiii {
-  color: #364C63;
+.list_form_headi {
+  color: #EF6F53;
   text-align: center;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: bold;
   letter-spacing: 0.05rem;
-  margin-bottom: 2rem;
-  margin-top: 1rem;
+  text-transform: uppercase;
 }
 
-.list_form_ull {
+.list_form_ul {
   list-style-type: none;
   padding: 0;
   margin: 1rem;
@@ -34,128 +33,16 @@
   box-sizing: border-box;
 }
 
-/* Add this for aligning <p> elements in two columns */
-.customer-detailss p {
-  width: 48%; 
-  margin-bottom: 0.5rem; 
-  color: #364C63;
-}
-
-
-.customer-detailss {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start; /* Aligns items to the top */
-  text-align: left; /* Makes sure all text is left-aligned */
-}
-
-/* Small margin adjustment for odd and even elements */
-.customer-detailss p:nth-child(odd) {
-  margin-right: 2%;
-}
-
-.customer-detailss p:nth-child(even) {
-  margin-left: 0;
-}
-
-.edit-btn{
-  margin: auto;
-  border: none;
-  border-radius: 10px;
-  background-color: #EF6F53;
-  color: white;
-  font-size: 0.9em;
-  padding:0.25rem;
-  width: 5vw;
-  line-height: 1rem;
-  margin-top: 1rem;
-  margin-bottom: 3rem;
-}
-
-
-.add-home-btn {
-  display: flex;
-  width: 8vw;
-  background-color: #EF6F53;
-  color: white;
-  border: none;
-  padding: 0.25rem;
-  font-size: 0.75rem;
-  border-radius: 5px;
-  cursor: pointer;
-  margin: auto;
-  align-items:center ;
-  justify-content: center;
-  margin-top: 5rem;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.add-home-btn:hover{
-  background-color: #f8360b;
-  transform: translateY(2px); 
-}
-
-.bulk-actions {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 1rem 2.5rem;
-  background-color: #ffffff;
-  margin-bottom: 1rem;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.team-assignment-controls {
-display: flex;
-align-items: center;
-justify-content: center;
-background-color: #ffffff;
-border-radius: 5px;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.team-user-select {
-padding: 0.5rem;
-border: 1px solid #ddd;
-border-radius: 4px;
-min-width: 200px;
-font-size: 0.9rem;
-color: #364C63;
-}
-
-.assign-team-btn {
-padding: 0.5rem 1rem;
-background-color: #EF6F53;
-color: white;
-border: none;
-border-radius: 4px;
-cursor: pointer;
-font-size: 0.9rem;
-transition: background-color 0.3s ease;
-}
-
-.assign-team-btn:hover {
-background-color: #f8360b;
-}
-
-.assign-team-btn:disabled {
-background-color: #cccccc;
-cursor: not-allowed;
-}
-
 
 
 /* Pagination Styling */
-.pagination-containerr {
+.pagination-container {
 background-color: #364C63;
 padding: 0.5rem; 
 border-top: 2px solid #EF6F53; 
 }
 
-.paginationn {
+.pagination {
 display: flex;
 justify-content: center;
 align-items: center;
@@ -165,7 +52,7 @@ overflow-x: auto;
 margin: auto;
 }
 
-.paginationn button {
+.pagination button {
 background-color: #EF6F53;
 color: white;
 border: none;
@@ -179,53 +66,102 @@ font-weight: 600;
 cursor: pointer;
 }
 
-.paginationn button:hover {
+.pagination button:hover {
 background-color: #FF8369; 
 }
 
-.paginationn button.active {
+.pagination button.active {
 background-color: #dd3e1e;
 font-weight: bold;
 }
 
-.paginationn button:focus {
+.pagination button:focus {
 outline: none;
 }
 
-.paginationn button:disabled {
+.pagination button:disabled {
 background-color: #ccc;
 cursor: not-allowed;
 }
 
-.ellipsiss {
+.ellipsis {
 margin: 0 5px;
 color: #EF6F53;
 font-weight: bold;
 }
-.page-numberr {
+.page-number {
 margin: 0 5px;
 padding: 5px 10px;
 cursor: pointer;
 }
 
-.page-numberr.active {
+.page-number.active {
 background-color: #007bff;
 color: #fff;
 border-radius: 5px;
 }
 
 
-.customers-table input[type="checkbox"] {
-width: 16px;
-height: 16px;
-cursor: pointer;
-margin: 0;
-vertical-align: middle;
-}
-
 .customers-table td:first-child,
 .customers-table th:first-child {
-width: 40px;
 text-align: center;
-padding: 0.5rem;
+padding: 0.25rem;
+}
+
+.customers-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.25rem 0;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 0.75rem;
+}
+
+.customers-table th {
+  background-color: #364C63;
+  color: white;
+  padding: 0.25rem;
+  text-align: left;
+}
+
+.customers-table td {
+  padding: 0.25rem;
+  border-bottom: 1px solid #eee;
+}
+
+.customers-table tr:hover {
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+.selected-row {
+  background-color: #e3f2fd;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+}
+
+.add-record-btnn {
+  background-color: #EF6F53;
+  color: white;
+  border: none;
+  padding: 0.5rem ;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.add-record-btnn:hover {
+  background-color: #f8360b;
+  transform: translateY(-1px);
+}
+
+.add-record-btnn:active {
+  transform: translateY(0);
 }

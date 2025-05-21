@@ -82,7 +82,7 @@ const UCP = ({ isLoggedIn = true }) => {
         </div>
         <iframe 
           ref={iframeRef}
-          src="https://ucpmed.voicemeetme.com/ucp/login" 
+          src="https://ucdemo.voicemeetme.com/ucp/login" 
           title="UCP Embedded"
           className="ucp-iframe"
           allow="microphone; camera; autoplay"

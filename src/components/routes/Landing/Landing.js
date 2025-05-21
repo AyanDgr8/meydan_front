@@ -16,7 +16,7 @@ const Landing = () => {
                 />
             </div>
             <div className="landing-content">
-                <h2 className="landing-heading">Welcome to MultyComm CRM</h2>
+                <h2 className="landing-heading">Welcome to Business</h2>
                 <Link to="/login" className="continue-link">
                     Click to continue
                 </Link>

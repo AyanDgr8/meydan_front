@@ -22,25 +22,15 @@ const UseForm = () => {
     const alertShownRef = useRef(false); // Use a ref to track if the alert has been shown
 
     const [formData, setFormData] = useState({
-        first_name: '',
-        middle_name: '',
-        last_name: '',
+        customer_name: '',
         phone_no_primary: '',
         phone_no_secondary: '',
-        whatsapp_num: '',
         email_id: '',
-        date_of_birth: '',
-        gender: '',
         address: '',
         country: '',
-        company_name: '',
         designation: '',
-        website: '',
-        other_location: '',
-        contact_type: '',
-        source: '',
         disposition: '',
-        QUEUE_NAME: '',
+        C_unique_id: '',
         agent_name: '',
         comment: '',
         scheduled_at: ''
@@ -66,7 +56,7 @@ const UseForm = () => {
     };
 
     const validateRequiredFields = () => {
-        const requiredFields = ['first_name', 'email_id', 'phone_no_primary'];
+        const requiredFields = ['customer_name', 'email_id', 'phone_no_primary'];
         const missingFields = requiredFields.filter(field => {
             const value = formData[field];
             return !value || (typeof value === 'string' && !value.trim());
@@ -246,7 +236,7 @@ const UseForm = () => {
             });
 
             alert("Customer deleted successfully.");
-            navigate("/customers");
+            navigate(`/customers/phone/${customer.phone_no_primary}`);
         } catch (error) {
             if (error.response && error.response.status === 403) {
                 alert("You do not have permission to delete customers.");
@@ -308,7 +298,7 @@ const UseForm = () => {
         
         // First validate required fields
         const requiredFields = {
-            'first_name': 'First Name',
+            'customer_name': 'Customer Name',
             'phone_no_primary': 'Primary Phone Number',
             'email_id': 'Email'
         };
@@ -361,7 +351,7 @@ const UseForm = () => {
 
             setCustomer(formData);
             setFormData(formData);
-            navigate("/customers");
+            navigate(`/customers/phone/${customer.phone_no_primary}`);
         } catch (error) {
             console.error('Update error:', error);
             const backendErrors = error.response?.data?.errors;
@@ -379,9 +369,6 @@ const UseForm = () => {
     return (
         <div>
             <div className="header-containerrr">
-                <Link to="/customers">
-                    <img src="/uploads/house-fill.svg" alt="Home" className="home-icon" />
-                </Link>
                 <h2 className="list_form_headiii">EDIT RECORD</h2>
             </div>
             <div className="use-last-container">
@@ -410,13 +397,7 @@ const UseForm = () => {
                         {[
                             ...(editingInfo ? [
                                 { 
-                                    label: "First Name", name: "first_name", required: true 
-                                },
-                                { 
-                                    label: "Middle Name", name: "middle_name" 
-                                },
-                                { 
-                                    label: "Last Name", name: "last_name"
+                                    label: "Customer Name", name: "customer_name", required: true 
                                 },
                                 { 
                                     label: "Phone", name: "phone_no_primary", required: true,
@@ -430,16 +411,7 @@ const UseForm = () => {
                                 pattern: "^\\+?[0-9]{8,14}$"
                             },
                             { 
-                                label: "Whatsapp", name: "whatsapp_num", 
-                                type: "tel", maxLength: "15",
-                                pattern: "^\\+?[0-9]{8,14}$"
-                            },
-                            { 
                                 label: "Email" , name: "email_id", required: true 
-                            },
-                            {
-                                label: "Date of Birth", name: "date_of_birth", 
-                                type: "date",
                             },
                             { 
                                 label: "Address", name: "address"
@@ -448,22 +420,7 @@ const UseForm = () => {
                                 label: "Country", name: "country"
                             },
                             { 
-                                label: "Company Name", name: "company_name"
-                            },
-                            { 
                                 label: "Designation", name: "designation"
-                            },
-                            { 
-                                label: "Website", name: "website"
-                            },
-                            { 
-                                label: "Other Location", name: "other_location"
-                            },
-                            { 
-                                label: "Contact Type", name: "contact_type"
-                            },
-                            { 
-                                label: "Source", name: "source"
                             },
                             { 
                                 label: "Queue Name", name: "QUEUE_NAME"
@@ -494,22 +451,6 @@ const UseForm = () => {
                                 className="agent-input"
                             />
                         </div>
-
-                        {/* Gender Dropdown */}
-                        <div className="label-input">
-                            <label>Gender:</label>
-                            <select 
-                                name="gender" 
-                                value={formData.gender || ''} 
-                                onChange={handleInputChange}
-                            >
-                                <option value="">Select Gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-
                         {/* Disposition Dropdown */}
                         <div className="label-input">
                             <label>Disposition:</label>
@@ -519,9 +460,13 @@ const UseForm = () => {
                                 onChange={handleInputChange}
                             >
                                 <option value="">Select Disposition</option>
-                                <option value="contacted">Contacted</option>
-                                <option value="not_contacted">Not Contacted</option>
-                                <option value="other">Other</option>
+                                <option value="call_back">Call Back</option>
+                                <option value="schedule_visit">Schedule Visit</option>
+                                <option value="office_visit">Office Visit</option>
+                                <option value="urgent_required">Urgent Required</option>
+                                <option value="interested">Interested</option>
+                                <option value="utility_call">Utility Call</option>
+                  <option value="emergency">Emergency</option>  
                             </select>
                         </div>
 

@@ -94,72 +94,50 @@ const Login = () => {
         setLoading(true);
         
         try {
-            // Clear any existing tokens first
+            // Clear any existing tokens and sessions first
             localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            localStorage.removeItem('admin');
             
             const apiUrl = process.env.REACT_APP_API_URL;
             const deviceId = getDeviceId();
             
             const response = await axios.post(`${apiUrl}/login`, formData, {
                 headers: {
-                    'x-device-id': deviceId
+                    'x-device-id': deviceId,
+                    'Content-Type': 'application/json'
                 }
             });
             
-            if (response.data && response.data.token) {
-                // Parse token to get role and permissions
-                const tokenData = jwtDecode(response.data.token);
-                console.log('Token data:', tokenData);
-                
-                // Get default permissions based on role
-                const defaultPermissions = {
-                    create_customer: ['super_admin', 'it_admin'].includes(tokenData.role),
-                    edit_customer: ['super_admin', 'it_admin'].includes(tokenData.role),
-                    delete_customer: ['super_admin', 'it_admin'].includes(tokenData.role),
-                    view_customer: ['super_admin', 'it_admin', 'business_head'].includes(tokenData.role),
-                    view_team_customers: ['super_admin', 'it_admin', 'business_head', 'team_leader'].includes(tokenData.role),
-                    view_assigned_customers: true, // All roles can view their own data
-                    upload_document: ['super_admin', 'it_admin', 'business_head'].includes(tokenData.role),
-                    download_data: ['super_admin', 'it_admin', 'business_head', 'team_leader'].includes(tokenData.role)
-                };
+            if (response.data?.success && response.data?.data?.token) {
+                const { token } = response.data.data;
+                const tokenData = jwtDecode(token);
 
-                // Store user data with both role-based and token permissions
-                const userData = {
-                    id: tokenData.userId,
+                // Verify this is an admin token
+                if (!tokenData.isAdmin) {
+                    throw new Error('Not authorized as admin');
+                }
+
+                // Store admin data
+                const adminData = {
+                    id: tokenData.id,
                     username: tokenData.username,
                     email: tokenData.email,
-                    role: tokenData.role,
-                    team_id: tokenData.team_id,
-                    // Combine role-based and token permissions
-                    permissions: defaultPermissions,
-                    // Store token permissions separately
-                    tokenPermissions: tokenData.permissions || []
+                    isAdmin: true,
+                    deviceId,
+                    sessionId: tokenData.sessionId
                 };
 
-                console.log('Storing user data:', userData);
+                // Store token and admin data
+                localStorage.setItem('token', token);
+                localStorage.setItem('admin', JSON.stringify(adminData));
                 
-                // Store token and user data
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(userData));
-                localStorage.setItem('needsReload', 'true');
-                
-                // Navigate based on user role and then reload the page
-                if (tokenData.role === 'super_admin' || tokenData.role === 'it_admin') {
-                    navigate('/admin', { replace: true });
-                } else {
-                    navigate('/customers', { replace: true });
-                }
-                
-                // Set a small timeout to ensure navigation completes before reload
-                setTimeout(() => {
-                    window.location.reload();
-                }, 100);
+                // Navigate to admin dashboard
+                navigate('/admin', { replace: true });
             } else {
                 throw new Error('Invalid response from server');
             }
         } catch (error) {
-            console.error("Error during login:", error);
+            console.error("Login error:", error);
             
             // Handle lockout
             if (error.response?.status === 429) {
@@ -173,6 +151,10 @@ const Login = () => {
                 // Start countdown timer
                 startLockoutTimer(remainingTime, formData.email);
                 setError(`Too many failed attempts. Try again in ${remainingTime} seconds`);
+            } else if (error.response?.status === 401) {
+                setError('Invalid email or password');
+            } else if (error.message === 'Not authorized as admin') {
+                setError('This account does not have admin privileges');
             } else {
                 setError(error.response?.data?.message || "Login failed. Please try again.");
             }
@@ -187,7 +169,31 @@ const Login = () => {
         if (email) {
             checkLockoutStatus(email);
         }
-    }, []);
+
+        // Check for existing session
+        const token = localStorage.getItem('token');
+        const admin = localStorage.getItem('admin');
+        
+        if (token && admin) {
+            try {
+                const tokenData = jwtDecode(token);
+                const currentTime = Date.now() / 1000;
+                
+                // If token is still valid, redirect to admin dashboard
+                if (tokenData.exp > currentTime) {
+                    navigate('/admin', { replace: true });
+                } else {
+                    // Clear expired session
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('admin');
+                }
+            } catch (error) {
+                // Clear invalid session
+                localStorage.removeItem('token');
+                localStorage.removeItem('admin');
+            }
+        }
+    }, [navigate]);
 
     return (
         <div className="login-page">
@@ -212,7 +218,7 @@ const Login = () => {
                             placeholder="Enter email"
                             value={formData.email} 
                             onChange={handleInputChange} 
-                            disabled={isLocked}
+                            disabled={isLocked || loading}
                             className={isLocked ? 'input-locked' : ''}
                             required 
                         />
@@ -224,12 +230,18 @@ const Login = () => {
                             placeholder="Enter password"
                             value={formData.password} 
                             onChange={handleInputChange} 
-                            disabled={isLocked}
+                            disabled={isLocked || loading}
                             className={isLocked ? 'input-locked' : ''}
                             required 
                         />
                         
-                        <button type="submit">Login</button>
+                        <button 
+                            type="submit" 
+                            disabled={isLocked || loading}
+                            className={loading ? 'loading' : ''}
+                        >
+                            {loading ? 'Logging in...' : 'Login'}
+                        </button>
                         <div className="forgot-password-link">
                             <Link to="/forgot-password">Forgot Password</Link>
                         </div>
@@ -240,7 +252,7 @@ const Login = () => {
                     <img
                         src="/uploads/sign.webp"
                         className="sign-icon"
-                        alt="sing icon"
+                        alt="sign icon"
                         aria-label="sign"
                     />
                 </div>

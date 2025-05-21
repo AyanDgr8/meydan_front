@@ -1,46 +1,32 @@
-// src/components/routes/Forms/CreateForm/CreateForm.js
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import "./CreateForm.css";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Typography, Box } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
 
 const CreateForm = () => {
   const { phone_no_primary } = useParams();
   const [formDataa, setFormData] = useState({
-    first_name: '',
-    middle_name: '',
-    last_name: '',
-    phone_no_primary: '',
+    customer_name: '',
+    phone_no_primary: phone_no_primary || '',
     phone_no_secondary: '',
-    whatsapp_num: '',
     email_id: '',
-    date_of_birth: '',
-    gender: '',
     address: '',
     country: '',
-    company_name: '',
-    designation: '',
-    website: '',
-    other_location: '',
-    contact_type: '',
-    source: '',
     disposition: '',
+    designation: '',
     QUEUE_NAME: '',
-    agent_name: '',
     comment: '',
-    scheduled_at: ''
+    scheduled_at: '',
+    designation: ''
   });
 
   const [formSuccess, setFormSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
-  const [duplicateInfo, setDuplicateInfo] = useState(null);
-  const [duplicateAction, setDuplicateAction] = useState('skip');
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const teamName = searchParams.get('team');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -48,38 +34,50 @@ const CreateForm = () => {
         setIsLoading(true);
         const token = localStorage.getItem('token');
         if (!token) {
-          navigate('/login');
+          navigate('/admin');
           return;
         }
 
-        const apiUrl = process.env.REACT_APP_API_URL;
-        const response = await axios.get(`${apiUrl}/current-user`, {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/current-queue`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Set agent name in form data
+        // Get team from URL parameters
+        const searchParams = new URLSearchParams(location.search);
+        const teamParam = searchParams.get('team');
+        
+        if (!teamParam) {
+          navigate('/admin'); // Redirect if no team specified
+          return;
+        }
+
+        // Set QUEUE_NAME from URL parameter
         setFormData(prev => ({
           ...prev,
-          agent_name: response.data.username
+          QUEUE_NAME: teamParam
         }));
 
-        // Log the response for debugging
-        console.log('Current user API response:', response.data);
-
       } catch (error) {
-        console.error('Error fetching user:', error);
-        navigate('/login');
+        console.error('Error fetching queue info:', error);
+        if (error.response?.status === 401) {
+          navigate('/admin');
+        } else {
+          setError('Error loading queue data. Please try again.');
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUser();
-  }, [navigate]);
+  }, [navigate, location]);
 
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    // Prevent QUEUE_NAME from being changed
+    if (name === 'QUEUE_NAME') return;
+    
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -88,14 +86,13 @@ const CreateForm = () => {
 
   // Handle scheduled_at click
   const handleScheduledAtClick = () => {
-    // Optional: Add any special handling for the datetime-local input
     console.log('Scheduling a call');
   };
 
   // Validate required fields
   const validateRequiredFields = () => {
     const requiredFields = [
-      "first_name", "phone_no_primary"
+      "customer_name", "phone_no_primary", "QUEUE_NAME"
     ];
 
     for (let field of requiredFields) {
@@ -104,379 +101,196 @@ const CreateForm = () => {
         return false;
       }
     }
-    
-    // Ensure agent_name is set (should be automatically populated)
-    if (!formDataa.agent_name || formDataa.agent_name.trim() === "") {
-      console.error("Agent name not automatically populated");
-      setError("Agent name not found. Please refresh the page or contact support.");
-      return false;
-    }
-    
     return true;
   };
 
   // Handle form submission
-  const handleSubmit = async (e, action = 'prompt') => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    // First validate required fields
     if (!validateRequiredFields()) {
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/admin');
       return;
     }
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setError('Authentication token not found');
-        return;
-      }
-
-      const apiUrl = process.env.REACT_APP_API_URL;
-
       const response = await axios.post(
-        `${apiUrl}/customers/new`, 
-        { ...formDataa, duplicateAction: action },
+        `${process.env.REACT_APP_API_URL}/customers/create`, 
+        formDataa,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
-          },
+          }
         }
       );
 
       if (response.data.success) {
-        console.log(response.data);
         setFormSuccess(true);
-        alert("Record added successfully!");
+        // Reset form data but keep team 
         setFormData({
-          first_name: '',
-          middle_name: '',
-          last_name: '',
+          customer_name: '',
           phone_no_primary: '',
           phone_no_secondary: '',
-          whatsapp_num: '',
           email_id: '',
-          date_of_birth: '',
-          gender: '',
           address: '',
           country: '',
-          company_name: '',
-          designation: '',
-          website: '',
-          other_location: '',
-          contact_type: '',
-          source: '',
           disposition: '',
-          QUEUE_NAME: '',
-          agent_name: formDataa.agent_name, // Preserving agent name
+          QUEUE_NAME: formDataa.QUEUE_NAME,
           comment: '',
-          scheduled_at: ''
+          scheduled_at: '',
+          designation: ''
         });
-        navigate('/customers');
+        setError('');
+        
+        // Navigate back to team view after successful creation
+        setTimeout(() => {
+          navigate(`/team/${formDataa.QUEUE_NAME}`);
+        }, 2000);
       }
     } catch (error) {
-      if (error.response?.status === 409) {
-        // Handle duplicate record
-        const duplicateData = error.response.data;
-        
-        // Store the duplicate info with calculated matching fields
-        setDuplicateInfo({
-          ...duplicateData,
-          matchingFields: {
-            name: formDataa.first_name === duplicateData.existing_record.first_name,
-            phone: formDataa.phone_no_primary === duplicateData.existing_record.phone_no_primary,
-            email: formDataa.email_id === duplicateData.existing_record.email_id
-          }
-        });
-        
-        setShowDuplicateDialog(true);
-      } else {
-        console.error('Error adding record:', error);
-        setError(error.response?.data?.message || 'Error adding record. Please try again.');
-      }
+      console.error('Error creating customer:', error);
+      setError(error.response?.data?.message || 'Failed to create customer');
     }
   };
 
-  const handleDuplicateAction = (action) => {
-    // Validate required fields again before proceeding with the action
-    if (!validateRequiredFields()) {
-      return;
-    }
-
-    setShowDuplicateDialog(false);
-    handleSubmit({ preventDefault: () => {} }, action);
-  };
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
       <h2 className="create_form_headiii">New Record</h2>
       <div className="create-form-container">
         {error && <div className="error-messagee">{error}</div>}
-        
-        {showDuplicateDialog && duplicateInfo && (
-          <Dialog 
-            open={showDuplicateDialog} 
-            onClose={() => setShowDuplicateDialog(false)}
-            maxWidth="md"
-            fullWidth
-          >
-            <DialogTitle sx={{ padding: '0 10px 0 10px', backgroundColor: '#1976d2', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, textAlign: 'center', width: '100%', color: 'white' }}>Duplicate Record Found</Typography>
-              <IconButton edge="end" color="inherit" onClick={() => setShowDuplicateDialog(false)} aria-label="close">
-                <CloseIcon />
-              </IconButton>
-            </DialogTitle>
-            <DialogContent sx={{ padding: '20px' }}>
-              <Typography variant="body1" sx={{ margin: '5px',color: '#EF6F53', fontWeight: 600}}>
-                {duplicateInfo.phone_no_primary_exists 
-                  ? "Phone number already exists in the system" 
-                  : duplicateInfo.email_exists 
-                    ? "Email already exists in the system"
-                    : "Duplicate record found"}
-              </Typography>
-              
-              <TableContainer sx={{ marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', borderRadius: '4px' }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ 
-                        width: '15%',
-                        backgroundColor: '#f5f5f5',
-                        fontWeight: 600,
-                        padding: '5px'
-                      }}>
-                        Field
-                      </TableCell>
-                      <TableCell sx={{ 
-                        width: '42.5%',
-                        backgroundColor: '#4CAF50',
-                        color: 'white',
-                        fontWeight: 600,
-                        fontSize: '1rem',
-                        padding: '5px'
-                      }}>
-                        New Record
-                      </TableCell>
-                      <TableCell sx={{ 
-                        width: '42.5%',
-                        backgroundColor: '#EF6F53',
-                        color: 'white',
-                        fontWeight: 600,
-                        fontSize: '1rem',
-                        padding: '5px'
-                      }}>
-                        Existing Record <span style={{ fontSize: '0.8rem' }}>(★ indicates matching fields)</span>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell sx={{ backgroundColor: '#fafafa', padding: '5px' }}>Name</TableCell>
-                      <TableCell sx={{ backgroundColor: '#f1f8f1', padding: '5px' }}>{formDataa.first_name}</TableCell>
-                      <TableCell sx={{ 
-                        backgroundColor: duplicateInfo.matchingFields.name ? '#ffecb3' : '#fff5f5', 
-                        padding: '5px',
-                        fontWeight: duplicateInfo.matchingFields.name ? 'bold' : 'normal'
-                      }}>
-                        {duplicateInfo.existing_record.first_name}
-                        {duplicateInfo.matchingFields.name && <span style={{ color: '#d32f2f', marginLeft: '5px' }}>★</span>}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell sx={{ backgroundColor: '#fafafa', padding: '5px' }}>Phone</TableCell>
-                      <TableCell sx={{ backgroundColor: '#f1f8f1', padding: '5px' }}>{formDataa.phone_no_primary}</TableCell>
-                      <TableCell sx={{ 
-                        backgroundColor: duplicateInfo.matchingFields.phone ? '#ffecb3' : '#fff5f5', 
-                        padding: '5px',
-                        fontWeight: duplicateInfo.matchingFields.phone ? 'bold' : 'normal'
-                      }}>
-                        {duplicateInfo.existing_record.phone_no_primary}
-                        {duplicateInfo.matchingFields.phone && <span style={{ color: '#d32f2f', marginLeft: '5px' }}>★</span>}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell sx={{ backgroundColor: '#fafafa', padding: '5px' }}>Email</TableCell>
-                      <TableCell sx={{ backgroundColor: '#f1f8f1', padding: '5px' }}>{formDataa.email_id}</TableCell>
-                      <TableCell sx={{ 
-                        backgroundColor: duplicateInfo.matchingFields.email ? '#ffecb3' : '#fff5f5', 
-                        padding: '5px',
-                        fontWeight: duplicateInfo.matchingFields.email ? 'bold' : 'normal'
-                      }}>
-                        {duplicateInfo.existing_record.email_id}
-                        {duplicateInfo.matchingFields.email && <span style={{ color: '#d32f2f', marginLeft: '5px' }}>★</span>}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              
-              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '15px' }}>
-                <Typography variant="h6" sx={{ margin: 0, fontWeight: 600, fontSize: '1rem', color: '#364C63' }}>Choose Action:</Typography>
-                <select 
-                  value={duplicateAction}
-                  onChange={(e) => setDuplicateAction(e.target.value)}
-                  style={{ 
-                    padding: '2px 8px', 
-                    borderRadius: '6px', 
-                    border: '1px solid #364C63',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    width: '300px',
-                    color: '#1976d2'
-                  }}
-                >
-                  <option value="skip">Do Not Upload Duplicate</option>
-                  <option value="append">Append with suffix (__1, __2, etc.)</option>
-                  <option value="replace">Replace existing record</option>
-                </select>
-              </Box>
-            </DialogContent>
-            <DialogActions sx={{ padding: '16px', borderTop: '1px solid #eee' }}>
-              <Button onClick={() => setShowDuplicateDialog(false)} color="secondary">
-                Cancel
-              </Button>
-              <Button 
-                onClick={() => handleDuplicateAction(duplicateAction)} 
-                variant="contained" 
-                color="primary"
-              >
-                Confirm
-              </Button>
-            </DialogActions>
-          </Dialog>
+        {formSuccess && (
+          <div className="success-message">Record created successfully!</div>
         )}
-
-        <form onSubmit={(e) => handleSubmit(e, 'prompt')} className="create-form">
-          {[
-            { 
-              label: "First Name", name: "first_name",required: true 
-            },
-            { 
-              label: "Middle Name", name: "middle_name" 
-            },
-            { 
-              label: "Last Name", name: "last_name"
-            },
-            { 
-              label: "Phone", name: "phone_no_primary", required: true,
-              type: "tel", maxLength: "12"
-            },
-            { 
-              label: "Alternate Phone", name: "phone_no_secondary", 
-              type: "tel", maxLength: "12"
-            },
-            { 
-              label: "Whatsapp", name: "whatsapp_num", 
-              type: "tel", maxLength: "12"
-            },
-            { 
-              label: "Email" , name: "email_id", required: true ,
-              type: "email"
-            },
-            { 
-              label: "Date of Birth", name: "date_of_birth", 
-              type: "date"
-            },
-            { 
-              label: "Address", name: "address"
-            },
-            { 
-              label: "Country", name: "country"
-            },
-            { 
-              label: "Company Name", name: "company_name"
-            },
-            { 
-              label: "Designation", name: "designation"
-            },
-            { 
-              label: "Website", name: "website"
-            },
-            { 
-              label: "Other Location", name: "other_location"
-            },
-            { 
-              label: "Contact Type", name: "contact_type"
-            },
-            {
-              label: "Disposition", name: "disposition"
-            },
-            { 
-              label: "Source", name: "source"
-            },
-            { 
-                label: "Queue Name", name: "QUEUE_NAME"
-            },
-          ].map(({ label, name, type = "text", maxLength, required }) => (
-            <div key={name} className="label-input">
-              <label>{label}{required && <span className="required"> *</span>}:</label>
-              <input
-                type={type}
-                name={name}
-                value={formDataa[name] || ''}
-                onChange={handleInputChange}
-                maxLength={maxLength}
-              />
-            </div>
-          ))}
-
-          {/* Agent Name Field */}
-          {/* <div className="label-input">
-              <label>Agent Name:</label>
-              <input
+        <form onSubmit={handleSubmit} className="create-form">
+          <div className="form-section">
+            <div className="form-section-title">Basic Information</div>
+            <div className="form-row">
+              <div className="label-input customer-field">
+                <label>Customer Name<span className="required"> *</span>:</label>
+                <input
                   type="text"
-                  name="agent_name"
-                  value={formData.agent_name || ''}
-                  disabled
-                  className="agent-input"
-              />
-          </div> */}
-
-          {/* calling_code Dropdown */}
-          <div className="label-input">
-              <label>Gender:</label>
-              <select name="gender" value={formDataa.gender} onChange={handleInputChange}>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-              </select>
-          </div>
-
-
-          {/* Schedule Call  */}
-          <div className="label-input">
-              <label>Schedule Call:</label>
-              <input
-                  type="datetime-local"
-                  name="scheduled_at"
-                  value={formDataa.scheduled_at || ''}
+                  name="customer_name"
+                  value={formDataa.customer_name}
                   onChange={handleInputChange}
-                  onKeyDown={(e) => e.preventDefault()}
-                  onClick={handleScheduledAtClick}
-                  style={{ cursor: 'pointer' }}
-                  className="sche_input"
-              />
-          </div>
-
-          {/* Comment Section */}
-          <div className="label-input comment">
-              <label>Comment:</label>
-              <div className="textarea-container">
-                  <textarea
-                      name="comment"
-                      value={formDataa.comment || ''}
-                      onChange={handleInputChange}
-                      rows="6"
-                      placeholder="Enter any additional comment"
-                      className="comet"
-                  />
+                  required
+                />
               </div>
+              <div className="label-input phone-field">
+                <label>Phone Number<span className="required"> *</span>:</label>
+                <input
+                  type="tel"
+                  name="phone_no_primary"
+                  value={formDataa.phone_no_primary}
+                  onChange={handleInputChange}
+                  required
+                  maxLength={15}
+                />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="label-input email-field">
+                <label>Email:</label>
+                <input
+                  type="email"
+                  name="email_id"
+                  value={formDataa.email_id}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="label-input phone-field">
+                <label>Alternative Number:</label>
+                <input
+                  type="text"
+                  name="phone_no_secondary"
+                  value={formDataa.phone_no_secondary}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
           </div>
 
-          <button type="submit" className="submit-btn submmit-button">
-            Add Customer
-          </button>
+          <div className="form-section">
+            <div className="form-section-title">Additional Details</div>
+            
+            {/* First row: Address and Country */}
+            <div className="form-row">
+              <div className="label-input address-field" style={{ flex: 2 }}>
+                <label>Address:</label>
+                <textarea
+                  name="address"
+                  value={formDataa.address}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="label-input country-field" style={{ flex: 1 }}>
+                <label>Country:</label>
+                <input
+                  type="text"
+                  name="country"
+                  value={formDataa.country}
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+
+            {/* Second row: Designation and Disposition */}
+            <div className="form-row">
+              <div className="label-input designation-field" style={{ flex: 1 }}>
+                <label>Designation:</label>
+                <input
+                  type="text"
+                  name="designation"
+                  value={formDataa.designation}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="label-input disposition-field" style={{ flex: 1 }}>
+                <label>Disposition:</label>
+                <select
+                  name="disposition"
+                  value={formDataa.disposition}
+                  onChange={handleInputChange}
+                >
+                  <option value="">Select Disposition</option>
+                  <option value="call_back">Call Back</option>
+                  <option value="schedule_visit">Schedule Visit</option>
+                  <option value="office_visit">Office Visit</option>
+                  <option value="urgent_required">Urgent Required</option>
+                  <option value="interested">Interested</option>
+                  <option value="utility_call">Utility Call</option>
+                  <option value="emergency">Emergency</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Third row: Comment */}
+            <div className="form-row">
+              <div className="label-input comment-field" style={{ flex: 1 }}>
+                <label>Comment:</label>
+                <textarea
+                  name="comment"
+                  value={formDataa.comment}
+                  onChange={handleInputChange}
+                  placeholder="Enter any additional comments..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="button-container">
+            <button type="submit" className="submit-buttonn">
+              Create Record
+            </button>
+          </div>
         </form>
       </div>
     </div>

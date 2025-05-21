@@ -1,163 +1,151 @@
 // src/components/routes/Forms/AdminPortal/AdminPortal.js
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import api from '../../../../utils/api';
 import './AdminPortal.css';
 
 const AdminPortal = () => {
-    const isLoggedIn = !!localStorage.getItem("token");
+    const navigate = useNavigate();
     const [teams, setTeams] = useState([]);
-    const [newTeams, setNewTeams] = useState(['']);
+    const [newTeams, setNewTeams] = useState([{ team_name: '', tax_id: '', reg_no: '', team_detail: '', team_address: '', team_country: '', team_phone: '', team_email: '' }]);
     const [users, setUsers] = useState([]);
-    // Define default permissions by role
-    const getDefaultPermissions = (role) => {
-        const permissions = {
-            create_customer: ['super_admin', 'it_admin', 'business_head'].includes(role),
-            edit_customer: ['super_admin', 'it_admin', 'business_head'].includes(role),
-            delete_customer: ['super_admin', 'it_admin', 'business_head'].includes(role),
-            view_customer: ['super_admin', 'it_admin', 'business_head'].includes(role),
-            view_team_customers: ['super_admin', 'it_admin', 'business_head', 'team_leader'].includes(role),
-            view_assigned_customers: true, // All roles can view their own data
-            upload_document: ['super_admin', 'it_admin', 'business_head', 'team_leader'].includes(role),
-            download_data: ['super_admin', 'it_admin', 'business_head', 'team_leader'].includes(role)
-        };
-
-        // For business_head, ensure all view permissions are true
-        if (role === 'business_head') {
-            permissions.view_customer = true;
-            permissions.view_team_customers = true;
-            permissions.view_assigned_customers = true;
-        }
-
-        return permissions;
-    };
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [messageVisible, setMessageVisible] = useState(false);
 
     const [newUser, setNewUser] = useState({
         username: '',
         email: '',
-        team: '',
-        role: 'user',
-        permissions: getDefaultPermissions('user')
+        mobile_num: '',
+        mobile_num_2: '',
+        designation: '',
+        team_id: '',
     });
 
-    // Permission display names mapping
-    const permissionDisplayNames = {
-        create_customer: 'Create Record',
-        edit_customer: 'Edit Record',
-        delete_customer: 'Delete Data',
-        view_customer: 'View All Data',
-        view_team_customers: 'View Team Data',
-        view_assigned_customers: 'View Own Data',
-        upload_document: 'Upload Document',
-        download_data: 'Download Data'
+    const [fieldErrors, setFieldErrors] = useState({
+        username: '',
+        email: '',
+        mobile_num: '',
+        mobile_num_2: '',
+        designation: '',
+        team_id: ''
+    });
+
+    const handleTeamClick = (teamName) => {
+        navigate(`/team/${teamName}`);
     };
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
 
     useEffect(() => {
-        if (error) {
-            alert(error);
-            setError(null);
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
         }
-        if (success) {
-            alert(success);
-            setSuccess(null);
+        
+        fetchTeams();
+        fetchUsers();
+    }, [navigate]);
+
+    useEffect(() => {
+        if (error || success) {
+            setMessageVisible(true);
+            const timer = setTimeout(() => {
+                setMessageVisible(false);
+            }, 2000);
+            
+            return () => clearTimeout(timer);
         }
     }, [error, success]);
 
-    // Fetch teams on component mount
     useEffect(() => {
-        fetchTeams();
-        fetchUsers();
-    }, []);
+        if (error) {
+            if (error.includes('token') || error.includes('unauthorized')) {
+                localStorage.removeItem('token');
+                navigate('/login');
+            }
+        }
+    }, [error, navigate]);
 
     const fetchTeams = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const apiUrl = process.env.REACT_APP_API_URL;
-            const response = await axios.get(`${apiUrl}/players/teams`, {
-              headers: { 
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            });
-            setTeams(response.data);
+            setIsLoading(true);
+            const response = await api.get('/team/players/teams');
+            if (response.data) {
+                setTeams(response.data);
+            }
         } catch (err) {
-            setError('Failed to fetch teams');
+            console.error('Error fetching teams:', err);
+            const errorMsg = err.response?.data?.message || 'Failed to fetch teams';
+            setError(errorMsg);
+            if (err.response?.status === 401) {
+                localStorage.removeItem('token');
+                navigate('/login');
+            }
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const fetchUsers = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const apiUrl = process.env.REACT_APP_API_URL;
-            const response = await axios.get(`${apiUrl}/players/users`, {
-              headers: { 
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            });
-            setUsers(response.data.data || []); // Access the data property and provide a fallback empty array
+            setIsLoading(true);
+            const response = await api.get('/players/users');
+            if (response.data) {
+                setUsers(response.data.data || []);
+            }
         } catch (err) {
-            setError('Failed to fetch users');
-            setUsers([]); // Set empty array on error
+            console.error('Error fetching users:', err);
+            const errorMsg = err.response?.data?.message || 'Failed to fetch users';
+            setError(errorMsg);
+            if (err.response?.status === 401) {
+                localStorage.removeItem('token');
+                navigate('/login');
+            }
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleTeamInputChange = (index, value) => {
+    const handleTeamInputChange = (index, field, value) => {
         const updatedTeams = [...newTeams];
-        updatedTeams[index] = value;
+        updatedTeams[index] = {
+            ...updatedTeams[index],
+            [field]: value
+        };
         setNewTeams(updatedTeams);
     };
 
-    // const addTeamInput = () => {
-    //     setNewTeams([...newTeams, '']);
-    // };
-
     const handleCreateTeams = async () => {
-        const validTeams = newTeams.filter(team => team.trim() !== '');
+        const validTeams = newTeams.filter(team => team.team_name.trim() !== '');
+        if (validTeams.length === 0) {
+            setError('Please enter a team name');
+            return;
+        }
+        
         try {
-            const token = localStorage.getItem('token');
-            const apiUrl = process.env.REACT_APP_API_URL;
-            for (const teamName of validTeams) {
-                await axios.post(`${apiUrl}/players/teams`, 
-                    { team_name: teamName },
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
+            for (const team of validTeams) {
+                await api.post('/team/players/teams', team);
             }
+            setError(''); // Clear any existing error
             setSuccess('Team created successfully');
-            setNewTeams(['']);
+            setNewTeams([{ team_name: '', tax_id: '', reg_no: '', team_detail: '', team_address: '', team_country: '', team_prompt: '', team_phone: '', team_email: '' }]);
             fetchTeams();
         } catch (err) {
-            setError('Failed to create team');
+            console.error('Error creating team:', err);
+            setSuccess(''); // Clear any existing success
+            const errorMsg = err.response?.data?.message || 'Failed to create team';
+            setError(errorMsg);
+            if (err.response?.status === 401) {
+                localStorage.removeItem('token');
+                navigate('/login');
+            }
         }
     };
 
     const handleUserInputChange = (field, value) => {
         setNewUser(prev => {
-            // For permission changes
-            if (field.startsWith('permission_')) {
-                const permissionName = field.replace('permission_', '');
-                return {
-                    ...prev,
-                    permissions: {
-                        ...prev.permissions,
-                        [permissionName]: value
-                    }
-                };
-            }
-
-            // For role changes, set default permissions based on role
-            if (field === 'role') {
-                const defaultPermissions = getDefaultPermissions(value);
-
-                return {
-                    ...prev,
-                    [field]: value,
-                    team: value === 'business_head' ? '' : prev.team,
-                    permissions: defaultPermissions
-                };
-            }
 
             // For other field changes
             return {
@@ -169,226 +157,251 @@ const AdminPortal = () => {
 
     const handleCreateUser = async () => {
         try {
+            // Reset all field errors
+            setFieldErrors({});
+            setError('');
+            setSuccess('');
+
             // Validate required fields
-            if (!newUser.username.trim()) {
-                setError('Username is required');
-                return;
-            }
-            if (!newUser.email.trim()) {
-                setError('Email is required');
-                return;
-            }
-            // Only validate team_id if role is not business_head
-            if (newUser.role !== 'business_head' && !newUser.team) {
-                setError('Team selection is required for users and team leaders');
+            const requiredFields = ['username', 'email', 'mobile_num', 'team_id', 'designation'];
+            const newErrors = {};
+            requiredFields.forEach(field => {
+                if (!newUser[field]) {
+                    newErrors[field] = `${field.replace('_', ' ')} is required`;
+                }
+            });
+
+            if (Object.keys(newErrors).length > 0) {
+                setFieldErrors(newErrors);
                 return;
             }
 
-            const token = localStorage.getItem('token');
-            const apiUrl = process.env.REACT_APP_API_URL;
+            const response = await api.post('/users/create', newUser);
             
-            // Format user data for backend
-            const userData = {
-                username: newUser.username.trim(),
-                email: newUser.email.trim(),
-                team_id: newUser.role === 'business_head' ? null : newUser.team, // Set team_id as null for business_head
-                role_type: newUser.role,
-                permissions: newUser.permissions
-            };
-            
-            const response = await axios.post(`${apiUrl}/users/create`, 
-                userData,
-                { headers: { 
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                }}
-            );
-            setSuccess(response.data.message);
-            setNewUser({
-                username: '',
-                email: '',
-                team: '',
-                role: 'user',
-                permissions: getDefaultPermissions('user')
-            });
-            fetchUsers();
+            if (response.data.success) {
+                // Clear form and show success message
+                setNewUser({
+                    username: '',
+                    email: '',
+                    mobile_num: '',
+                    mobile_num_2: '',
+                    team_id: '',
+                    designation: ''
+                });
+                setSuccess('User created successfully');
+                fetchUsers(); // Refresh the users list
+            }
         } catch (err) {
-            console.error('Error creating user:', err.response?.data || err);
-            setError(err.response?.data?.error || 'Failed to create user');
+            console.error('Error creating user:', err);
+            const errorData = err.response?.data;
+            
+            if (errorData?.field) {
+                // Set error for the specific field that caused the duplicate error
+                setFieldErrors({ [errorData.field]: errorData.error });
+                setError(errorData.error); // Also show the error message at the top
+            } else {
+                setError(errorData?.error || 'Failed to create user');
+            }
         }
     };
 
     return (
         <div className="admin-portal-container">
+            {messageVisible && (error || success) && (
+                <div className={`message-container ${error ? 'error' : 'success'}`}>
+                    {error || success}
+                </div>
+            )}
             <div className="admin-portal">
-            <h2 className='admin-portal-heading'>Admin Portal</h2>
+                <div className="section">
+                    <h3 className='existing-user-heading'>Users</h3>
+                    <div className="users-list">
+                        {/* Group users by team */}
+                        {teams.map(team => {
+                            // Filter users for this team
+                            const teamUsers = users.filter(user => 
+                                user.team_id === team.id
+                            );
 
-            <div className="sectionnn">
-                <h3 className='create-team-heading'>Create Team</h3>
-                <div className='team-inputsss'>
-                    {newTeams.map((team, index) => (
-                        <div key={index} className="team-inputt">
+                            // Only show team section if there are users
+                            if (teamUsers.length === 0) return null;
+
+                            return (
+                                <div 
+                                    key={team.id} 
+                                    className="team-section"
+                                    onClick={() => handleTeamClick(team.team_name)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <h4 className="team-name">{team.team_name}</h4>
+                                    <div className="user-row header">
+                                        <div className="user-col">Name</div>
+                                        <div className="user-col">Email</div>
+                                        <div className="user-col">Mobile Number</div>
+                                        <div className="user-col">Alter Number</div>
+                                        <div className="user-col">Designation</div>
+                                    </div>
+                                    {teamUsers.map(user => (
+                                        <div className="user-row" key={user.id}>
+                                            <div className="user-col">{user.username}</div>
+                                            <div className="user-col">{user.email}</div>
+                                            <div className="user-col">{user.mobile_num}</div>
+                                            <div className="user-col">{user.mobile_num_2}</div>
+                                            <div className="user-col">{user.designation}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })}
+
+                    </div>
+                </div>
+
+                <div className="sectionnn">
+                    <h3 className='create-user-heading'>Create User</h3>
+                    <div className="user-formm">
+                        <div className="user-inputs">
+                        
                             <input
                                 type="text"
-                                value={team}
-                                onChange={(e) => handleTeamInputChange(index, e.target.value)}
-                                placeholder="Enter team name"
+                                value={newUser.username}
+                                onChange={(e) => handleUserInputChange('username', e.target.value)}
+                                placeholder="Username"
+                                className={fieldErrors.username ? 'error-field' : ''}
                             />
-                            {/* {index === newTeams.length - 1 && (
-                                <button onClick={addTeamInput} className="add-button">+</button>
-                            )} */}
-                        </div>
-                    ))}
-                    <button onClick={handleCreateTeams} className="create-button">Create Team</button>
-                </div>
-            </div>
-
-            <div className="sectionn">
-                <h3 className='create-user-heading'>Create User</h3>
-                <div className="user-formm">
-                    <div className="user-inputs">
-                        <input
-                            type="text"
-                            value={newUser.username}
-                            onChange={(e) => handleUserInputChange('username', e.target.value)}
-                            placeholder="Username"
-                        />
-                        <input
-                            type="email"
-                            value={newUser.email}
-                            onChange={(e) => handleUserInputChange('email', e.target.value)}
-                            placeholder="Email"
-                        />
-
-                        <select
-                            value={newUser.role}
-                            onChange={(e) => handleUserInputChange('role', e.target.value)}
-                        >
-                            <option value="">Select Role</option>
-                            <option value="user">User</option>
-                            <option value="team_leader">Team Leader</option>
-                            <option value="business_head">Business Head</option>
-                        </select>
-                        {newUser.role !== 'business_head' && (
+                            <input
+                                type="email"
+                                value={newUser.email}
+                                onChange={(e) => handleUserInputChange('email', e.target.value)}
+                                placeholder="Email"
+                                className={fieldErrors.email ? 'error-field' : ''}
+                            />
+                            <input
+                                type="text"
+                                value={newUser.mobile_num}
+                                onChange={(e) => handleUserInputChange('mobile_num', e.target.value)}
+                                placeholder="Mobile Number"
+                                className={fieldErrors.mobile_num ? 'error-field' : ''}
+                            />
+                            <input
+                                type="text"
+                                value={newUser.mobile_num_2}
+                                onChange={(e) => handleUserInputChange('mobile_num_2', e.target.value)}
+                                placeholder="Alter Mobile Number"
+                                className={fieldErrors.mobile_num_2 ? 'error-field' : ''}
+                            />
+                            <input
+                                type="text"
+                                value={newUser.designation}
+                                onChange={(e) => handleUserInputChange('designation', e.target.value)}
+                                placeholder="Designation"
+                                className={fieldErrors.designation ? 'error-field' : ''}
+                            />
                             <select
-                                value={newUser.team}
-                                onChange={(e) => handleUserInputChange('team', e.target.value)}
+                                value={newUser.team_id}
+                                onChange={(e) => handleUserInputChange('team_id', e.target.value)}
+                                className={fieldErrors.team_id ? 'error-field' : ''}
                             >
                                 <option value="">Select Team</option>
                                 {teams.map(team => (
                                     <option key={team.id} value={team.id}>{team.team_name}</option>
                                 ))}
                             </select>
-                        )}
-                    </div>
-
-                    <div className="permissions-section">
-                        <h4 className='permissions-heading'>Permissions</h4>
-                        <div className="permissions-grid">
-                            {Object.entries(newUser.permissions).map(([key, value]) => (
-                                <div key={key} className="permission-item">
-                                    <label className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={value}
-                                            onChange={(e) => handleUserInputChange(`permission_${key}`, e.target.checked)}
-                                            className="mr-2"
-                                            disabled={key === 'view_assigned_customers' || 
-                                                  (newUser.role === 'business_head' && 
-                                                   (key === 'view_customer' || 
-                                                    key === 'view_team_customers' || 
-                                                    key === 'view_assigned_customers'))}
-                                        />
-                                        {permissionDisplayNames[key]}
-                                    </label>
-                                </div>
-                            ))}
+                            {fieldErrors.team_id && <div className="error-messaage">{fieldErrors.team_id}</div>}
                         </div>
+
+                        <button onClick={handleCreateUser} className="create-button">Create User</button>
                     </div>
 
-                    <button onClick={handleCreateUser} className="create-button">Create User</button>
                 </div>
 
+                <div className="sectionnn">
+                    <h3 className='create-team-heading'>Create Company</h3>
+                    <div className='team-inputsss'>
+                        {newTeams.map((team, index) => (
+                            <div key={index} className="team-inputt">
+                                <div className="team-row">
+                                    <input
+                                        type="text"
+                                        value={team.team_name}
+                                        onChange={(e) => handleTeamInputChange(index, 'team_name', e.target.value)}
+                                        placeholder="Enter Company name"
+                                        className="team-name-input"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={team.tax_id}
+                                        onChange={(e) => handleTeamInputChange(index, 'tax_id', e.target.value)}
+                                        placeholder="Tax ID"
+                                        className="tax-id-input"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={team.reg_no}
+                                        onChange={(e) => handleTeamInputChange(index, 'reg_no', e.target.value)}
+                                        placeholder="Registration Number"
+                                        className="reg-no-input"
+                                    />
+                                </div>
+                                <div className="team-row">
+                                    <input
+                                        type="text"
+                                        value={team.team_phone}
+                                        onChange={(e) => handleTeamInputChange(index, 'team_phone', e.target.value)}
+                                        placeholder="Company Phone"
+                                        className="team-phone-input"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={team.team_email}
+                                        onChange={(e) => handleTeamInputChange(index, 'team_email', e.target.value)}
+                                        placeholder="Company Email"
+                                        className="team-email-input"
+                                    />
+                                </div>
+                                <div className="team-row">
+                                    <input
+                                        type="text"
+                                        value={team.team_address}
+                                        onChange={(e) => handleTeamInputChange(index, 'team_address', e.target.value)}
+                                        placeholder="Company Address"
+                                        className="team-address-input"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={team.team_country}
+                                        onChange={(e) => handleTeamInputChange(index, 'team_country', e.target.value)}
+                                        placeholder="Company Country"
+                                        className="team-country-input"
+                                    />
+                                </div>
+                                <div className="team-row">
+                                    <input
+                                        type="text"
+                                        value={team.team_prompt}
+                                        onChange={(e) => handleTeamInputChange(index, 'team_prompt', e.target.value)}
+                                        placeholder="Company Prompt"
+                                        className="team-prompt-input"
+                                    />
+                                </div>
+                                <div className="team-row">
+                                    <input
+                                        type="text"
+                                        value={team.team_detail}
+                                        onChange={(e) => handleTeamInputChange(index, 'team_detail', e.target.value)}
+                                        placeholder="Company Details"
+                                        className="team-detail-input"
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="team-button-container">
+                        <button onClick={handleCreateTeams} className="create-button">Create Team</button>
+                    </div>
                 </div>
             </div>
 
-            <div className="section">
-                <h3 className='existing-user-heading'>Existing Users</h3>
-                <div className="users-list">
-                    {/* Group users by team */}
-                    {teams.map(team => {
-                        // Filter users for this team, excluding super_admin
-                        const teamUsers = users.filter(user => 
-                            user.team_id === team.id && 
-                            user.role !== 'super_admin' // Exclude super_admin users
-                        );
-                        // Sort users by role (team_leader first, then users)
-                        const sortedTeamUsers = teamUsers.sort((a, b) => {
-                            if (a.role === 'team_leader') return -1;
-                            if (b.role === 'team_leader') return 1;
-                            return 0;
-                        });
-
-                        // Only show team section if there are users
-                        if (teamUsers.length === 0) return null;
-
-                        return (
-                            <div key={team.id} className="team-section">
-                                <h4 className="team-name">{team.team_name}</h4>
-                                <div className="user-row header">
-                                    <div className="user-col">Name</div>
-                                    <div className="user-col">Email</div>
-                                    <div className="user-col">Role</div>
-                                    {/* <div className="user-col">Permissions</div> */}
-                                </div>
-                                {sortedTeamUsers.map(user => (
-                                    <div key={user.id} className={`user-row ${user.role === 'team_leader' ? 'team-leader-section' : 'user-section'}`}>
-                                        <div className="user-col">{user.username}</div>
-                                        <div className="user-col">{user.email}</div>
-                                        <div className={`user-col role-${user.role}`}>{user.role}</div>
-                                        {/* <div className="user-col">
-                                            {user.permissions && user.permissions.slice(0, 3).map(perm => (
-                                                <span key={perm} className="permission-item">{permissionDisplayNames[perm] || perm}</span>
-                                            ))}
-                                            {user.permissions && user.permissions.length > 3 && (
-                                                <span className="permission-item">+{user.permissions.length - 3} more</span>
-                                            )}
-                                        </div> */}
-                                    </div>
-                                ))}
-                            </div>
-                        );
-                    })}
-
-                    {/* Show users without team (like business_head) separately, excluding super_admin */}
-                    {users.filter(user => !user.team_id && user.role !== 'super_admin').length > 0 && (
-                        <div className="team-section business-head-section">
-                            <h4 className="team-name">Admin</h4>
-                            <div className="user-row header">
-                                <div className="user-col">Name</div>
-                                <div className="user-col">Email</div>
-                                <div className="user-col">Role</div>
-                                {/* <div className="user-col">Permissions</div> */}
-                            </div>
-                            {users.filter(user => !user.team_id && user.role !== 'super_admin').map(user => (
-                                <div key={user.id} className="user-row">
-                                    <div className="user-col">{user.username}</div>
-                                    <div className="user-col">{user.email}</div>
-                                    <div className={`user-col role-${user.role}`}>{user.role}</div>
-                                    {/* <div className="user-col">
-                                        {user.permissions && user.permissions.slice(0, 3).map(perm => (
-                                            <span key={perm} className="permission-item">{permissionDisplayNames[perm] || perm}</span>
-                                        ))}
-                                        {user.permissions && user.permissions.length > 3 && (
-                                            <span className="permission-item">+{user.permissions.length - 3} more</span>
-                                        )}
-                                    </div> */}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
             
         </div>
     );

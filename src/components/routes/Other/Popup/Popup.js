@@ -9,31 +9,8 @@ import './Popup.css';
 const Popup = () => {
     const { popupMessages, removePopupMessage } = usePopup();
     const navigate = useNavigate();
-    const [permissions, setPermissions] = useState({});
 
-    useEffect(() => {
-        const fetchUserPermissions = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const apiUrl = process.env.REACT_APP_API_URL;
-                
-                const response = await axios.get(`${apiUrl}/current-user`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const userPermissions = response.data.permissions || [];
-                setPermissions(userPermissions.reduce((acc, perm) => ({ ...acc, [perm]: true }), {}));
-            } catch (error) {
-                console.error('Error fetching permissions:', error);
-            }
-        };
-
-        fetchUserPermissions();
-    }, []);
-
+   
     const handleRecordClick = (customer, index) => {
         // First remove the popup
         removePopupMessage(index);
@@ -42,8 +19,7 @@ const Popup = () => {
         navigate(`/customers/phone/${customer.phone_no_primary}`, { 
             state: { 
                 customer: customer,
-                fromReminder: true,
-                permissions: permissions
+                fromReminder: true
             },
             replace: true // Use replace to prevent back navigation to popup
         });
