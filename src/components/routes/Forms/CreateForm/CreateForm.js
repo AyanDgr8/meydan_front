@@ -17,7 +17,6 @@ const CreateForm = () => {
     QUEUE_NAME: '',
     comment: '',
     scheduled_at: '',
-    designation: ''
   });
 
   const [formSuccess, setFormSuccess] = useState(false);

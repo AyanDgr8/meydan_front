@@ -139,8 +139,13 @@ const SearchForm = () => {
   }, [location.search, navigate]);
 
   const handleEdit = (customer) => {
-    navigate(`/customers/phone/${customer.phone_no_primary}`, {
-      state: { customer }
+    const query = new URLSearchParams(location.search);
+    const teamName = query.get('team') || localStorage.getItem('currentQueue');
+    navigate(`/team/${teamName}/${customer.phone_no_primary}`, {
+      state: { 
+        customer,
+        queueName: teamName
+      }
     });
   };
 

@@ -15,7 +15,7 @@
     height: 70vh;
     display: flex;
     flex-direction: column;
-    flex: 0 0 80%;  /* Take exactly 80% width */
+    flex: 0 0 80%;  
     width: 100%;
     margin: 0 auto;
 }
@@ -44,26 +44,30 @@
     text-transform: uppercase;
 }
 
-
 .use-form-container form {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 0.25rem; 
+    flex-direction: column;
     flex: 1;
-    margin-bottom: 50px; /* Space for the button */
+    margin-bottom: 50px;
 }
 
-.label-input {
+.form-fields-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: -0.25rem;
+}
+
+.label-inputt {
     display: flex;
     flex-direction: row;
     align-items: center;
-    width: 30%; 
+    width: calc(33.33% - 0.5rem);
     margin-bottom: 0.25rem;
+    padding: 0.25rem;
 }
 
-
-.label-input select{
+.label-inputt select{
     font-size: 0.7rem;
     width: 50%; 
     background-color: white;
@@ -90,7 +94,6 @@
 .use-form-container input {
     flex: 1;
     padding: 0.15rem;
-    border: 1px solid #ccc;
     border: none;
     border-radius: 5px;
     font-size: 0.75rem;
@@ -104,6 +107,39 @@
     outline: none;
 }
 
+.label-inputt.comment {
+    width: 100%;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.label-inputt.comment label {
+    font-weight: bold;
+    margin: 0.35rem;
+    font-size: 0.85rem;
+    color: #364C63;
+    margin-right: 0.5rem;
+    text-align: left;
+    width: 35%;
+}
+
+.label-inputt.comment .textarea-container {
+    display: flex;
+    margin-left: -5rem;
+    width: 100%;
+}
+
+.label-inputt.comment .comet {
+    width: 100%;
+    resize: vertical;
+    padding: 0.15rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    transition: border-color 0.3s ease;
+    color: #323232;
+}
 
 .sbt-use-btn {
     background-color: #364C63;
@@ -127,41 +163,6 @@
     background-color: blue;
 }
 
-.label-input.comment {
-    width: 75%;
-    margin-bottom: 0.25rem;
-    display: flex;
-    align-items: flex-start;
-}
-
-.label-input.comment label {
-    font-weight: bold;
-    margin: 0.35rem;
-    font-size: 0.85rem;
-    color: #364C63;
-    margin-right: 0.5rem;
-    text-align: left;
-    width: 35%;
-}
-
-.label-input.comment .textarea-container {
-    display: flex;
-    margin-left: -5rem;
-    width: 100%;
-}
-
-.label-input.comment .comet {
-    width: 100%;
-    resize: vertical;
-    padding: 0.15rem;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.75rem;
-    transition: border-color 0.3s ease;
-    color: #323232;
-}
-
-
 .home-icon {
     width: 35px;
     height: 35px;
@@ -176,7 +177,6 @@
     transform: scale(1.1);
     border-color: #EF6F53;  
 }
-
 
 .add-field-btnnn {
   display: flex;
@@ -200,7 +200,6 @@
   transform: translateY(1px); 
 }
 
-/* Customer Info Header Styles */
 .customer-info-header {
     background-color: #364C63;
     color: white;
@@ -253,14 +252,26 @@
     color: #EF6F53;
 }
 
-/* Responsive styles for screens between 901px and 1280px */
+/* Responsive styles */
+@media screen and (max-width: 1200px) {
+    .label-inputt {
+        width: calc(50% - 0.5rem);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .label-inputt {
+        width: 100%;
+    }
+}
+
 @media only screen and (min-width: 901px) and (max-width: 1280px) {
     .use-form-container {
         height: 75vh;
         padding: 0.75rem;
     }
 
-    .label-input {
+    .label-inputt {
         width: 45%;
         margin-bottom: 0.5rem;
     }
@@ -275,7 +286,7 @@
         padding: 0.2rem;
     }
 
-    .label-input select {
+    .label-inputt select {
         font-size: 0.7rem;
         width: 55%;
     }
@@ -289,14 +300,13 @@
 
 }
 
-/* Responsive styles for screens between 1281px and 1400px */
 @media only screen and (min-width: 1281px) and (max-width: 1400px) {
     .use-form-container {
         height: 80vh;
         padding: 1rem;
     }
 
-    .label-input {
+    .label-inputt {
         width: 32%;
         margin-bottom: 0.75rem;
     }
@@ -311,7 +321,7 @@
         padding: 0.25rem;
     }
 
-    .label-input select {
+    .label-inputt select {
         font-size: 0.8rem;
         width: 50%;
     }
@@ -327,4 +337,57 @@
         font-size: 1.3rem;
         margin-bottom: 1rem;
     }
+}
+
+@media (max-width: 1200px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Button styling */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.form-actions button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-actions button:hover {
+    opacity: 0.9;
+}
+
+/* Primary button */
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+/* Secondary button */
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+}
+
+/* Danger button */
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
 }

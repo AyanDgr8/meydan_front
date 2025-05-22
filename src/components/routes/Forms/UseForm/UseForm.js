@@ -6,12 +6,13 @@ import axios from "axios";
 import "./UseForm.css";
 import LastChanges from "../LastChange/LastChange";
 import EditIcon from '@mui/icons-material/Edit';  // Import edit icon
-
+import { jwtDecode } from 'jwt-decode'; // Import as named export
 
 const UseForm = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { phone_no_primary } = useParams();
+    const params = useParams();
+    const { phone_no_primary } = params;
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [hasDeletePermission, setHasDeletePermission] = useState(false);
@@ -33,7 +34,19 @@ const UseForm = () => {
         C_unique_id: '',
         agent_name: '',
         comment: '',
-        scheduled_at: ''
+        scheduled_at: '',
+        first_name: '',
+        middle_name: '',
+        last_name: '',
+        whatsapp_num: '',
+        date_of_birth: '',
+        company_name: '',
+        website: '',
+        other_location: '',
+        contact_type: '',
+        source: '',
+        QUEUE_NAME: '',
+        gender: ''
     });
 
     const [updatedData, setUpdatedData] = useState(formData);
@@ -163,45 +176,84 @@ const UseForm = () => {
         }
     };
 
-    useEffect(() => {
-        fetchUser();
-        const fetchCustomerData = async () => {
-            if (location.state?.customer) {
-                setCustomer(location.state.customer);
-                setFormData(location.state.customer);
-                setLoading(false);
-            } else if (phone_no_primary) {
-                try {
-                    const apiUrl = process.env.REACT_APP_API_URL;
-                    const token = localStorage.getItem('token');
-                    const response = await axios.get(`${apiUrl}/customers/phone/${phone_no_primary}`, {
-                        headers: { 
-                            Authorization: `Bearer ${token}`,
-                            "Content-Type": "application/json", 
-                        },
-                    });
-                    if (response.data?.customer) {
-                        setCustomer(response.data.customer);
-                        setFormData(response.data.customer);
-                    } else {
-                        navigate(`/customer/new/${phone_no_primary}`, { state: { phone_no_primary } });
-                    }
-                } catch (error) {
-                    if (!alertShownRef.current && error.response?.status === 404) {
-                        alert("Customer not found. Redirecting to create a new customer.");
-                        alertShownRef.current = true;
-                        navigate(`/customer/new/${phone_no_primary}`, { state: { phone_no_primary } });
-                    } else {
-                        console.error(error);
-                    }
-                } finally {
-                    setLoading(false);
+    const fetchCustomerData = async () => {
+        try {
+            const apiUrl = process.env.REACT_APP_API_URL;
+            const token = localStorage.getItem('token');
+            const queueName = location.state?.queueName || localStorage.getItem('currentQueue');
+
+            // Use the new team-based endpoint
+            const response = await axios.get(`${apiUrl}/team/${queueName}/${phone_no_primary}`, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
+            });
+
+            if (response.data.success) {
+                setCustomer(response.data.data);
+                setFormData(response.data.data);
+            }
+        } catch (error) {
+            if (!alertShownRef.current && error.response?.status === 404) {
+                alert("Customer not found. Redirecting to create a new customer.");
+                alertShownRef.current = true;
+                navigate(`/customer/new/${phone_no_primary}`, { 
+                    state: { 
+                        phone_no_primary,
+                        queueName: location.state?.queueName || localStorage.getItem('currentQueue')
+                    } 
+                });
+            } else {
+                console.error(error);
+                setError('Error fetching customer data');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    navigate('/login');
+                    return;
+                }
+
+                // Get team name from various sources
+                const teamName = location.state?.queueName || params.teamName || localStorage.getItem('currentQueue');
+                
+                if (teamName) {
+                    setFormData(prev => ({ ...prev, QUEUE_NAME: teamName }));
+                }
+
+                if (location.state?.customer) {
+                    setCustomer(location.state.customer);
+                    setFormData(prev => ({
+                        ...prev,
+                        ...location.state.customer,
+                        QUEUE_NAME: teamName || location.state.customer.QUEUE_NAME
+                    }));
+                    setLoading(false);
+                } else if (phone_no_primary) {
+                    await fetchCustomerData();
+                }
+
+                // Decode token and check permissions
+                const decodedToken = jwtDecode(token);
+                setUser(decodedToken);
+                setHasDeletePermission(decodedToken.role === 'admin');
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                setLoading(false);
             }
         };
 
-        fetchCustomerData();
-    }, [phone_no_primary]); // Add phone_no_primary as dependency since it's used in fetchCustomerData
+        fetchData();
+    }, [navigate, phone_no_primary, location.state]);
 
     useEffect(() => {
         if (customer) {
@@ -322,7 +374,7 @@ const UseForm = () => {
 
         // If no fields changed, return early without making API call
         if (Object.keys(changedFields).length === 0) {
-            navigate("/customers");
+            navigate(`/team/${formData.QUEUE_NAME}`);
             return;
         }
 
@@ -351,7 +403,17 @@ const UseForm = () => {
 
             setCustomer(formData);
             setFormData(formData);
-            navigate(`/customers/phone/${customer.phone_no_primary}`);
+            
+            // Get the team name from either the URL params, form data, or localStorage
+            const teamName = formData.QUEUE_NAME || location.state?.queueName || localStorage.getItem('currentQueue');
+            
+            // Navigate to the team page
+            if (teamName) {
+                navigate(`/team/${teamName}`);
+            } else {
+                console.warn('No team name found for navigation');
+                navigate('/customers/search'); // Fallback to search page if no team name
+            }
         } catch (error) {
             console.error('Update error:', error);
             const backendErrors = error.response?.data?.errors;
@@ -376,7 +438,7 @@ const UseForm = () => {
                     <div className="customer-info-header">
                         <div className="customer-info-section">
                             <div className="customer-name">
-                                {formData.first_name} {formData.middle_name} {formData.last_name}
+                                {formData.customer_name || `${formData.first_name || ''} ${formData.middle_name || ''} ${formData.last_name || ''}`}
                             </div>
                             <div className="customer-phone">
                                 {formatPhoneForDisplay(formData.phone_no_primary)}
@@ -387,106 +449,108 @@ const UseForm = () => {
                             onClick={() => {
                                 setEditingInfo(!editingInfo);
                                 if (!editingInfo) {
-                                    setTimeout(() => document.querySelector('input[name="first_name"]')?.focus(), 100);
+                                    setTimeout(() => document.querySelector('input[name="customer_name"]')?.focus(), 100);
                                 }
                             }} 
                         />
                     </div>
                     <form onSubmit={handleSubmit}>
-                        {/* Your input fields */}
-                        {[
-                            ...(editingInfo ? [
+                        <div className="form-fields-grid">
+                            {[
+                                ...(editingInfo ? [
+                                    { 
+                                        label: "Customer Name", name: "customer_name", required: true
+                                    },
+                                    { 
+                                        label: "Phone", name: "phone_no_primary", required: true,
+                                        type: "tel", maxLength: "15",
+                                        pattern: "^\\+?[0-9]{8,14}$"
+                                    }
+                                ] : []),
                                 { 
-                                    label: "Customer Name", name: "customer_name", required: true 
+                                    label: "Alternate Phone", name: "phone_no_secondary", 
+                                    type: "tel", maxLength: "15",
+                                    pattern: "^\\+?[0-9]{8,14}$"
                                 },
                                 { 
-                                    label: "Phone", name: "phone_no_primary", required: true,
-                                    type: "tel", maxLength: "15",
-                                    pattern: "^\\+?[0-9]{8,14}$" // Allow + at start and 8-14 digits
+                                    label: "Email", name: "email_id", required: true 
+                                },
+                                { 
+                                    label: "Address", name: "address"
+                                },
+                                { 
+                                    label: "Country", name: "country"
+                                },
+                                { 
+                                    label: "Designation", name: "designation"
+                                },
+                                { 
+                                    label: "Queue Name", name: "QUEUE_NAME"
                                 }
-                            ] : []),
-                            { 
-                                label: "Alternate Phone", name: "phone_no_secondary", 
-                                type: "tel", maxLength: "15",
-                                pattern: "^\\+?[0-9]{8,14}$"
-                            },
-                            { 
-                                label: "Email" , name: "email_id", required: true 
-                            },
-                            { 
-                                label: "Address", name: "address"
-                            },
-                            { 
-                                label: "Country", name: "country"
-                            },
-                            { 
-                                label: "Designation", name: "designation"
-                            },
-                            { 
-                                label: "Queue Name", name: "QUEUE_NAME"
-                            },
-                        ].map(({ label, name, type = "text", disabled, maxLength, required, pattern }) => (
-                            <div key={name} className="label-input">
-                                <label>{label}{required && <span className="required"> *</span>}:</label>
+                            ].map(({ label, name, type = "text", disabled, maxLength, required, pattern }) => (
+                                <div key={name} className="label-inputt">
+                                    <label>{label}{required && <span className="required"> *</span>}:</label>
+                                    <input
+                                        type={type}
+                                        name={name}
+                                        value={formData[name] || ''}
+                                        onChange={handleInputChange}
+                                        disabled={disabled}
+                                        maxLength={maxLength}
+                                        pattern={pattern}
+                                    />
+                                </div>
+                            ))}
+
+                            {/* Agent Name Field */}
+                            <div className="label-inputt">
+                                <label>Agent Name:</label>
                                 <input
-                                    type={type}
-                                    name={name}
-                                    value={formData[name] || ''}
-                                    onChange={handleInputChange}
-                                    disabled={disabled}
-                                    maxLength={maxLength}
-                                    pattern={pattern}
+                                    type="text"
+                                    name="agent_name"
+                                    value={formData.agent_name || ''}
+                                    disabled
+                                    className="agent-input"
                                 />
                             </div>
-                        ))}
 
-                        {/* Agent Name Field */}
-                        <div className="label-input">
-                            <label>Agent Name:</label>
-                            <input
-                                type="text"
-                                name="agent_name"
-                                value={formData.agent_name || ''}
-                                disabled
-                                className="agent-input"
-                            />
-                        </div>
-                        {/* Disposition Dropdown */}
-                        <div className="label-input">
-                            <label>Disposition:</label>
-                            <select 
-                                name="disposition" 
-                                value={formData.disposition || ''} 
-                                onChange={handleInputChange}
-                            >
-                                <option value="">Select Disposition</option>
-                                <option value="call_back">Call Back</option>
-                                <option value="schedule_visit">Schedule Visit</option>
-                                <option value="office_visit">Office Visit</option>
-                                <option value="urgent_required">Urgent Required</option>
-                                <option value="interested">Interested</option>
-                                <option value="utility_call">Utility Call</option>
-                  <option value="emergency">Emergency</option>  
-                            </select>
-                        </div>
+                            {/* Disposition Dropdown */}
+                            <div className="label-inputt">
+                                <label>Disposition:</label>
+                                <select 
+                                    name="disposition" 
+                                    value={formData.disposition || ''} 
+                                    onChange={handleInputChange}
+                                >
+                                    <option value="">Select Disposition</option>
+                                    <option value="call_back">Call Back</option>
+                                    <option value="schedule_visit">Schedule Visit</option>
+                                    <option value="office_visit">Office Visit</option>
+                                    <option value="urgent_required">Urgent Required</option>
+                                    <option value="interested">Interested</option>
+                                    <option value="utility_call">Utility Call</option>
+                                    <option value="emergency">Emergency</option>
+                                </select>
+                            </div>
 
-                        {/* Schedule Call  */}
-                        <div className="label-input">
-                            <label>Schedule Call:</label>
-                            <input
-                                type="datetime-local"
-                                name="scheduled_at"
-                                value={formData.scheduled_at || ''}
-                                onChange={handleInputChange}
-                                onKeyDown={(e) => e.preventDefault()}
-                                onClick={handleScheduledAtClick}
-                                style={{ cursor: 'pointer' }}
-                                className="sche_input"
-                            />
+                            {/* Schedule Call */}
+                            <div className="label-inputt">
+                                <label>Schedule Call:</label>
+                                <input
+                                    type="datetime-local"
+                                    name="scheduled_at"
+                                    value={formData.scheduled_at || ''}
+                                    onChange={handleInputChange}
+                                    onKeyDown={(e) => e.preventDefault()}
+                                    onClick={handleScheduledAtClick}
+                                    style={{ cursor: 'pointer' }}
+                                    className="sche_input"
+                                />
+                            </div>
                         </div>
 
-                        {/* Comment Section */}
-                        <div className="label-input comment">
+                        {/* Comment Section - Full Width */}
+                        <div className="label-inputt comment">
                             <label>Comment:</label>
                             <div className="textarea-container">
                                 <textarea

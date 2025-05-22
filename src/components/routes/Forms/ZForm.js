@@ -32,7 +32,10 @@ const ZForm = () => {
             {/* List all customers */}
             <Route path="/team/:teamName" element={<TeamForm />} />
 
-            {/* Use customer form by phone number */}
+            {/* View/Edit customer by team and phone */}
+            <Route path="/team/:teamName/:phone_no" element={<UseForm />} />
+
+            {/* Use customer form by phone number - legacy route */}
             <Route path="/customers/phone/:phone_no" element={<UseForm />} />
 
             {/* Use customer form by ID */}
