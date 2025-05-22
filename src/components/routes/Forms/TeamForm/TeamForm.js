@@ -151,9 +151,9 @@ const TeamForm = () => {
                             <div className="member-details">
                                 <p><strong>Role:</strong> {member.designation}</p>
                                 <p><strong>Email:</strong> {member.email}</p>
-                                <p><strong>Phone:</strong> {member.mobile_num}</p>
+                                <p><strong>Phone:</strong> <a href={`tel:${member.mobile_num}`}>{member.mobile_num}</a></p>
                                 {member.mobile_num_2 && (
-                                    <p><strong>Alt Phone:</strong> {member.mobile_num_2}</p>
+                                    <p><strong>Alt Phone:</strong> <a href={`tel:${member.mobile_num_2}`}>{member.mobile_num_2}</a></p>
                                 )}
                             </div>
                         </div>

@@ -11,6 +11,7 @@ const SearchForm = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(10);
+  const [teamName, setTeamName] = useState(''); 
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -136,6 +137,11 @@ const SearchForm = () => {
   useEffect(() => {
     fetchData();
     fetchTeamMembers();
+    const query = new URLSearchParams(location.search);
+    const team = query.get('team');
+    if (team) {
+      setTeamName(team);
+    }
   }, [location.search, navigate]);
 
   const handleEdit = (customer) => {
@@ -242,7 +248,7 @@ const SearchForm = () => {
         </div>
       )}
       <div className="header-container">
-        <h2 className="list_form_headi">Records</h2>
+        <h2 className="list_form_headi">{teamName ? `${teamName} Records` : 'Records'}</h2>
         <button className="add-record-btnn" onClick={handleAddRecord}>
           Add New Record
         </button>

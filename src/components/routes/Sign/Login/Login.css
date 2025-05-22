@@ -77,7 +77,7 @@
     background-color: #EF6F53;
     color: white;
     border: none;
-    width: 30%;
+    width: 75%;
     margin: auto;
     padding: 0.25rem;
     font-size: 1rem;
@@ -103,17 +103,6 @@
     margin-right: 0.5rem;
 }
 
-.register-link {
-    display: inline-block;
-    margin-top: 0.5rem;
-    color: #EF6F53;
-    font-weight: bold;
-    text-decoration: none;
-}
-
-.register-link:hover {
-    text-decoration: underline;
-}
 
 .forgot-password-link {
     text-align: center;

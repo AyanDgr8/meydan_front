@@ -11,8 +11,7 @@ import { jwtDecode } from 'jwt-decode'; // Import as named export
 const UseForm = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const params = useParams();
-    const { phone_no_primary } = params;
+    const { phone_no_primary } = useParams();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [hasDeletePermission, setHasDeletePermission] = useState(false);
@@ -178,80 +177,142 @@ const UseForm = () => {
 
     const fetchCustomerData = async () => {
         try {
-            const apiUrl = process.env.REACT_APP_API_URL;
             const token = localStorage.getItem('token');
-            const queueName = location.state?.queueName || localStorage.getItem('currentQueue');
+            if (!token) {
+                navigate('/admin');
+                return;
+            }
 
-            // Use the new team-based endpoint
-            const response = await axios.get(`${apiUrl}/team/${queueName}/${phone_no_primary}`, {
-                headers: { 
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+            // Get phone number and team name from URL
+            const pathParts = location.pathname.split('/');
+            const teamName = pathParts[2];
+            const phoneNumber = pathParts[3];
+            
+            if (!phoneNumber || !teamName) {
+                setError('Phone number or team name not found');
+                setLoading(false);
+                return;
+            }
+
+            // First try to get customer data from location state
+            const locationState = location.state;
+            if (locationState?.customer) {
+                setCustomer(locationState.customer);
+                setFormData(prev => ({
+                    ...prev,
+                    ...locationState.customer,
+                    QUEUE_NAME: locationState.queueName || prev.QUEUE_NAME
+                }));
+                setLoading(false);
+                return;
+            }
+
+            // If no state data, fetch from API using the team-specific endpoint
+            const apiUrl = process.env.REACT_APP_API_URL;
+            try {
+                const response = await axios.get(`${apiUrl}/team/${teamName}/${phoneNumber}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.data?.exists && response.data?.customer) {
+                    const customerData = response.data.customer;
+                    setCustomer(customerData);
+                    setFormData(prev => ({
+                        ...prev,
+                        ...customerData,
+                        QUEUE_NAME: teamName
+                    }));
+                } else {
+                    // If customer data is not found, redirect to create form
+                    navigate(`/customers/create?team=${teamName}`, {
+                        state: {
+                            phone_no_primary: phoneNumber,
+                            QUEUE_NAME: teamName
+                        }
+                    });
+                    return;
+                }
+            } catch (error) {
+                // If customer not found (404) or other error, redirect to create form
+                if (error.response?.status === 404) {
+                    navigate(`/customers/create?team=${teamName}`, {
+                        state: {
+                            phone_no_primary: phoneNumber,
+                            QUEUE_NAME: teamName
+                        }
+                    });
+                    return;
+                }
+                throw error; // Re-throw other errors to be caught by outer catch block
+            }
+            
+        } catch (error) {
+            console.error('Error fetching customer data:', error);
+            // For any other errors, redirect to create form as well
+            const teamName = location.pathname.split('/')[2];
+            const phoneNumber = location.pathname.split('/')[3];
+            navigate(`/customers/create?team=${teamName}`, {
+                state: {
+                    phone_no_primary: phoneNumber,
+                    QUEUE_NAME: teamName
                 }
             });
-
-            if (response.data.success) {
-                setCustomer(response.data.data);
-                setFormData(response.data.data);
-            }
-        } catch (error) {
-            if (!alertShownRef.current && error.response?.status === 404) {
-                alert("Customer not found. Redirecting to create a new customer.");
-                alertShownRef.current = true;
-                navigate(`/customer/new/${phone_no_primary}`, { 
-                    state: { 
-                        phone_no_primary,
-                        queueName: location.state?.queueName || localStorage.getItem('currentQueue')
-                    } 
-                });
-            } else {
-                console.error(error);
-                setError('Error fetching customer data');
-            }
         } finally {
             setLoading(false);
         }
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
+    const fetchData = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/admin');
+                return;
+            }
+
             try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    navigate('/login');
+                // Verify token is valid
+                const decodedToken = jwtDecode(token);
+                if (!decodedToken || !decodedToken.exp || Date.now() >= decodedToken.exp * 1000) {
+                    localStorage.removeItem('token');
+                    navigate('/admin');
                     return;
                 }
-
-                // Get team name from various sources
-                const teamName = location.state?.queueName || params.teamName || localStorage.getItem('currentQueue');
-                
-                if (teamName) {
-                    setFormData(prev => ({ ...prev, QUEUE_NAME: teamName }));
-                }
-
-                if (location.state?.customer) {
-                    setCustomer(location.state.customer);
-                    setFormData(prev => ({
-                        ...prev,
-                        ...location.state.customer,
-                        QUEUE_NAME: teamName || location.state.customer.QUEUE_NAME
-                    }));
-                    setLoading(false);
-                } else if (phone_no_primary) {
-                    await fetchCustomerData();
-                }
-
-                // Decode token and check permissions
-                const decodedToken = jwtDecode(token);
                 setUser(decodedToken);
                 setHasDeletePermission(decodedToken.role === 'admin');
-
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                setLoading(false);
+            } catch (e) {
+                console.error('Invalid token:', e);
+                localStorage.removeItem('token');
+                navigate('/admin');
+                return;
             }
-        };
 
+            // Get team name from URL params first, then fallback to other sources
+            const teamName = location.pathname.split('/')[2]; // Assuming URL pattern: /team/{teamName}/{phone}
+
+            if (!teamName) {
+                setError('Team name not found');
+                setLoading(false);
+                return;
+            }
+
+            // Store the team name in state and localStorage
+            setFormData(prev => ({ ...prev, QUEUE_NAME: teamName }));
+            localStorage.setItem('currentQueue', teamName);
+
+            await fetchCustomerData();
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setError(error.message || 'Error fetching data');
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
     }, [navigate, phone_no_primary, location.state]);
 
@@ -426,7 +487,7 @@ const UseForm = () => {
     };
     
     if (loading) return <div>Loading customer data...</div>;
-    if (!customer) return <div>No customer data found.</div>;
+    if (error) return <div>{error}</div>;
 
     return (
         <div>

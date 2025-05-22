@@ -240,7 +240,7 @@ const Login = () => {
                             disabled={isLocked || loading}
                             className={loading ? 'loading' : ''}
                         >
-                            {loading ? 'Logging in...' : 'Login'}
+                            {loading ? 'Login...' : 'Login'}
                         </button>
                         <div className="forgot-password-link">
                             <Link to="/forgot-password">Forgot Password</Link>

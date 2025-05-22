@@ -35,6 +35,9 @@ const ZForm = () => {
             {/* View/Edit customer by team and phone */}
             <Route path="/team/:teamName/:phone_no" element={<UseForm />} />
 
+            {/* Create a new customer record */}
+            <Route path="/customers/create" element={<CreateForm />} />
+
             {/* Use customer form by phone number - legacy route */}
             <Route path="/customers/phone/:phone_no" element={<UseForm />} />
 
@@ -42,7 +45,6 @@ const ZForm = () => {
             <Route path="/customers/:id" element={<UseForm />} />
 
             {/* Create a new customer record - legacy routes */}
-            <Route path="/customers/create" element={<CreateForm />} />
             <Route path="/customers/create/:phone_no" element={<CreateForm />} />
 
             {/* Log customer changes, passing customerId as a prop */}

@@ -5,16 +5,17 @@ import "./CreateForm.css";
 
 const CreateForm = () => {
   const { phone_no_primary } = useParams();
-  const [formDataa, setFormData] = useState({
+  const location = useLocation();
+  const [formData, setFormData] = useState({
     customer_name: '',
-    phone_no_primary: phone_no_primary || '',
+    phone_no_primary: phone_no_primary || location.state?.phone_no_primary || '',
     phone_no_secondary: '',
     email_id: '',
     address: '',
     country: '',
     disposition: '',
     designation: '',
-    QUEUE_NAME: '',
+    QUEUE_NAME: location.state?.QUEUE_NAME || '',
     comment: '',
     scheduled_at: '',
   });
@@ -23,9 +24,18 @@ const CreateForm = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const teamName = searchParams.get('team');
+
+  useEffect(() => {
+    // Get team from URL query parameter or state
+    const params = new URLSearchParams(location.search);
+    const teamName = location.state?.QUEUE_NAME || params.get('team');
+    if (teamName) {
+      setFormData(prev => ({
+        ...prev,
+        QUEUE_NAME: teamName
+      }));
+    }
+  }, [location.search, location.state]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -41,21 +51,6 @@ const CreateForm = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Get team from URL parameters
-        const searchParams = new URLSearchParams(location.search);
-        const teamParam = searchParams.get('team');
-        
-        if (!teamParam) {
-          navigate('/admin'); // Redirect if no team specified
-          return;
-        }
-
-        // Set QUEUE_NAME from URL parameter
-        setFormData(prev => ({
-          ...prev,
-          QUEUE_NAME: teamParam
-        }));
-
       } catch (error) {
         console.error('Error fetching queue info:', error);
         if (error.response?.status === 401) {
@@ -69,7 +64,7 @@ const CreateForm = () => {
     };
 
     fetchUser();
-  }, [navigate, location]);
+  }, [navigate]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -95,7 +90,7 @@ const CreateForm = () => {
     ];
 
     for (let field of requiredFields) {
-      if (!formDataa[field] || formDataa[field].trim() === "") {
+      if (!formData[field] || formData[field].trim() === "") {
         setError(`Please fill out the "${field.replace(/_/g, ' ').toUpperCase()}" field.`);
         return false;
       }
@@ -119,7 +114,7 @@ const CreateForm = () => {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/customers/create`, 
-        formDataa,
+        formData,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -139,7 +134,7 @@ const CreateForm = () => {
           address: '',
           country: '',
           disposition: '',
-          QUEUE_NAME: formDataa.QUEUE_NAME,
+          QUEUE_NAME: formData.QUEUE_NAME,
           comment: '',
           scheduled_at: '',
           designation: ''
@@ -148,7 +143,7 @@ const CreateForm = () => {
         
         // Navigate back to team view after successful creation
         setTimeout(() => {
-          navigate(`/team/${formDataa.QUEUE_NAME}`);
+          navigate(`/team/${formData.QUEUE_NAME}`);
         }, 2000);
       }
     } catch (error) {
@@ -178,7 +173,7 @@ const CreateForm = () => {
                 <input
                   type="text"
                   name="customer_name"
-                  value={formDataa.customer_name}
+                  value={formData.customer_name}
                   onChange={handleInputChange}
                   required
                 />
@@ -188,7 +183,7 @@ const CreateForm = () => {
                 <input
                   type="tel"
                   name="phone_no_primary"
-                  value={formDataa.phone_no_primary}
+                  value={formData.phone_no_primary}
                   onChange={handleInputChange}
                   required
                   maxLength={15}
@@ -201,7 +196,7 @@ const CreateForm = () => {
                 <input
                   type="email"
                   name="email_id"
-                  value={formDataa.email_id}
+                  value={formData.email_id}
                   onChange={handleInputChange}
                 />
               </div>
@@ -210,7 +205,7 @@ const CreateForm = () => {
                 <input
                   type="text"
                   name="phone_no_secondary"
-                  value={formDataa.phone_no_secondary}
+                  value={formData.phone_no_secondary}
                   onChange={handleInputChange}
                 />
               </div>
@@ -226,7 +221,7 @@ const CreateForm = () => {
                 <label>Address:</label>
                 <textarea
                   name="address"
-                  value={formDataa.address}
+                  value={formData.address}
                   onChange={handleInputChange}
                 />
               </div>
@@ -235,7 +230,7 @@ const CreateForm = () => {
                 <input
                   type="text"
                   name="country"
-                  value={formDataa.country}
+                  value={formData.country}
                   onChange={handleInputChange}
                 />
               </div>
@@ -248,7 +243,7 @@ const CreateForm = () => {
                 <input
                   type="text"
                   name="designation"
-                  value={formDataa.designation}
+                  value={formData.designation}
                   onChange={handleInputChange}
                 />
               </div>
@@ -256,7 +251,7 @@ const CreateForm = () => {
                 <label>Disposition:</label>
                 <select
                   name="disposition"
-                  value={formDataa.disposition}
+                  value={formData.disposition}
                   onChange={handleInputChange}
                 >
                   <option value="">Select Disposition</option>
@@ -277,7 +272,7 @@ const CreateForm = () => {
                 <label>Comment:</label>
                 <textarea
                   name="comment"
-                  value={formDataa.comment}
+                  value={formData.comment}
                   onChange={handleInputChange}
                   placeholder="Enter any additional comments..."
                 />
