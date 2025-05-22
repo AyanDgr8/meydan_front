@@ -19,22 +19,52 @@
   font-weight: 600;
 }
 
-.error-messagee, .success-message {
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
+.errorr-messagee, .successs-message {
+  padding: 0.15rem;
   border-radius: 4px;
 }
 
-.error-messagee {
+.errorr-messagee {
   color: #d32f2f;
   background-color: #ffebee;
   border: 1px solid #ef9a9a;
+  padding: 2px;
+  border-radius: 4px;
+  font-size: 0.9rem;
 }
 
-.success-message {
+.error-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+}
+
+.error-text {
+  flex: 1;
+  line-height: 1.1;
+}
+
+.version-info {
+  color: #1976d2;
+  font-weight: 500;
+  white-space: nowrap;
+  background: rgba(25, 118, 210, 0.1);
+  padding: 1px;
+  border-radius: 4px;
+  border: 1px solid rgba(25, 118, 210, 0.2);
+  min-width: fit-content;
+}
+
+.successs-message {
   color: #2e7d32;
   background-color: #e8f5e9;
   border: 1px solid #a5d6a7;
+  padding: 2px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  text-align: center;
+  line-height: 1.1;
 }
 
 .create-form {
@@ -131,15 +161,14 @@
 
 .button-container {
   text-align: center;
-  padding: 0.75rem 0;
-  margin-top: 2rem;
+  padding: 0.25rem;
   border-top: 1px solid #eee;
 }
 
 .submit-buttonn {
   background-color: #1976d2;
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.5rem;
   border: none;
   border-radius: 4px;
   cursor: pointer;

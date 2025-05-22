@@ -67,7 +67,7 @@ const CreateForm = () => {
   }, [navigate]);
 
   // Handle input changes
-  const handleInputChange = (e) => {
+  const handleInputChange = async (e) => {
     const { name, value } = e.target;
     // Prevent QUEUE_NAME from being changed
     if (name === 'QUEUE_NAME') return;
@@ -76,6 +76,68 @@ const CreateForm = () => {
       ...prev,
       [name]: value
     }));
+
+    if (name === 'phone_no_primary') {
+      handlePhoneChange(e);
+    }
+  };
+
+  const handlePhoneChange = async (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Check if a customer with this phone number exists
+    if (name === 'phone_no_primary' && value) {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/admin');
+          return;
+        }
+
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/customers/check/${value}/${formData.QUEUE_NAME}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        if (response.data.exists) {
+          const latestRecord = response.data.existingCustomer;
+          setError(response.data.message);
+          
+          // Auto-fill form with existing data
+          setFormData(prev => ({
+            ...prev,
+            customer_name: latestRecord?.customer_name || prev.customer_name,
+            phone_no_primary: value,
+            phone_no_secondary: latestRecord?.phone_no_secondary || prev.phone_no_secondary,
+            email_id: latestRecord?.email_id || prev.email_id,
+            address: latestRecord?.address || prev.address,
+            country: latestRecord?.country || prev.country,
+            designation: latestRecord?.designation || prev.designation,
+            disposition: latestRecord?.disposition || prev.disposition,
+            comment: latestRecord?.comment || prev.comment,
+            C_unique_id: response.data.suggestedId // Use the suggested new version ID
+          }));
+        } else {
+          setError('');
+          // Clear version-related fields but keep the phone number
+          setFormData(prev => ({
+            ...prev,
+            C_unique_id: '',
+            phone_no_primary: value
+          }));
+        }
+      } catch (err) {
+        console.error('Error checking phone number:', err);
+      }
+    }
   };
 
   // Handle scheduled_at click
@@ -101,19 +163,18 @@ const CreateForm = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateRequiredFields()) {
-      return;
-    }
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/admin');
-      return;
-    }
+    setError("");
+    setFormSuccess(false);
 
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/admin');
+        return;
+      }
+
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/customers/create`, 
+        `${process.env.REACT_APP_API_URL}/customers/create`,
         formData,
         {
           headers: {
@@ -125,31 +186,37 @@ const CreateForm = () => {
 
       if (response.data.success) {
         setFormSuccess(true);
-        // Reset form data but keep team 
-        setFormData({
-          customer_name: '',
-          phone_no_primary: '',
-          phone_no_secondary: '',
-          email_id: '',
-          address: '',
-          country: '',
-          disposition: '',
-          QUEUE_NAME: formData.QUEUE_NAME,
-          comment: '',
-          scheduled_at: '',
-          designation: ''
-        });
         setError('');
-        
-        // Navigate back to team view after successful creation
+        resetForm();
         setTimeout(() => {
           navigate(`/team/${formData.QUEUE_NAME}`);
         }, 2000);
       }
-    } catch (error) {
-      console.error('Error creating customer:', error);
-      setError(error.response?.data?.message || 'Failed to create customer');
+    } catch (err) {
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("An error occurred while creating the customer.");
+      }
     }
+  };
+
+  const resetForm = () => {
+    const currentPhone = formData.phone_no_primary;
+    const currentTeam = formData.QUEUE_NAME;
+    setFormData({
+      customer_name: '',
+      phone_no_primary: currentPhone, // Keep the phone number
+      phone_no_secondary: '',
+      email_id: '',
+      address: '',
+      country: '',
+      disposition: '',
+      QUEUE_NAME: currentTeam, // Keep the team
+      comment: '',
+      scheduled_at: '',
+      designation: ''
+    });
   };
 
   if (isLoading) {
@@ -160,24 +227,10 @@ const CreateForm = () => {
     <div>
       <h2 className="create_form_headiii">New Record</h2>
       <div className="create-form-container">
-        {error && <div className="error-messagee">{error}</div>}
-        {formSuccess && (
-          <div className="success-message">Record created successfully!</div>
-        )}
         <form onSubmit={handleSubmit} className="create-form">
           <div className="form-section">
             <div className="form-section-title">Basic Information</div>
             <div className="form-row">
-              <div className="label-input customer-field">
-                <label>Customer Name<span className="required"> *</span>:</label>
-                <input
-                  type="text"
-                  name="customer_name"
-                  value={formData.customer_name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
               <div className="label-input phone-field">
                 <label>Phone Number<span className="required"> *</span>:</label>
                 <input
@@ -187,6 +240,17 @@ const CreateForm = () => {
                   onChange={handleInputChange}
                   required
                   maxLength={15}
+                />
+              </div>
+              
+              <div className="label-input customer-field">
+                <label>Customer Name<span className="required"> *</span>:</label>
+                <input
+                  type="text"
+                  name="customer_name"
+                  value={formData.customer_name}
+                  onChange={handleInputChange}
+                  required
                 />
               </div>
             </div>
@@ -280,6 +344,22 @@ const CreateForm = () => {
             </div>
           </div>
 
+          {error && (
+            <div className="errorr-messagee">
+              <div className="error-content">
+                <span className="error-text">{error}</span>
+                {/* {formData.C_unique_id && (
+                  // <span className="version-info">
+                  //   Next version: {formData.C_unique_id}
+                  // </span>
+                )} */}
+              </div>
+            </div>
+          )}
+          {formSuccess && (
+            <div className="successs-message">Record created successfully!</div>
+          )}
+
           <div className="button-container">
             <button type="submit" className="submit-buttonn">
               Create Record
@@ -287,6 +367,7 @@ const CreateForm = () => {
           </div>
         </form>
       </div>
+      
     </div>
   );
 };

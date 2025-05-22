@@ -226,14 +226,24 @@ const UseForm = () => {
                         QUEUE_NAME: teamName
                     }));
                 } else {
-                    // If customer data is not found, redirect to team page
-                    navigate(`/team/${teamName}`);
+                    // If customer data is not found, redirect to create form
+                    navigate(`/customers/create?team=${teamName}`, {
+                        state: {
+                            phone_no_primary: phoneNumber,
+                            QUEUE_NAME: teamName
+                        }
+                    });
                     return;
                 }
             } catch (error) {
-                // If customer not found (404), redirect to team page
+                // If customer not found (404) or other error, redirect to create form
                 if (error.response?.status === 404) {
-                    navigate(`/team/${teamName}`);
+                    navigate(`/customers/create?team=${teamName}`, {
+                        state: {
+                            phone_no_primary: phoneNumber,
+                            QUEUE_NAME: teamName
+                        }
+                    });
                     return;
                 }
                 throw error; // Re-throw other errors to be caught by outer catch block
@@ -241,9 +251,15 @@ const UseForm = () => {
             
         } catch (error) {
             console.error('Error fetching customer data:', error);
-            // For any other errors, redirect to team page
+            // For any other errors, redirect to create form as well
             const teamName = location.pathname.split('/')[2];
-            navigate(`/team/${teamName}`);
+            const phoneNumber = location.pathname.split('/')[3];
+            navigate(`/customers/create?team=${teamName}`, {
+                state: {
+                    phone_no_primary: phoneNumber,
+                    QUEUE_NAME: teamName
+                }
+            });
         } finally {
             setLoading(false);
         }
