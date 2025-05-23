@@ -247,9 +247,9 @@ const SearchForm = () => {
           </div>
         </div>
       )}
-      <div className="header-container">
+      <div className="header-containerrr">
         <h2 className="list_form_headi">{teamName ? `${teamName} Records` : 'Records'}</h2>
-        <button className="add-record-btnn" onClick={handleAddRecord}>
+        <button className="add-record-btnnn" onClick={handleAddRecord}>
           Add New Record
         </button>
       </div>

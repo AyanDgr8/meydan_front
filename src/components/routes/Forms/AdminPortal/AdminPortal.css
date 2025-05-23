@@ -18,7 +18,7 @@
     border-radius: 8px;
     padding: 5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 100%;
+    width: 90%;
     display: flex;
     margin: auto;
     margin-bottom: 1rem;
@@ -52,31 +52,6 @@
     padding: 10px;
     border-radius: 4px;
     margin-bottom: 1rem;
-}
-
-.permissions-section {
-    padding: 0.25rem;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.permissions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-    gap: 1rem;
-}
-
-.permission-item {
-    display: flex;
-    align-items: center;
-}
-
-.permission-item input[type="checkbox"] {
-    margin-right: 0.5rem;
-}
-
-.permission-item input[type="checkbox"]:disabled + span {
-    color: #6c757d;
 }
 
 .create-team-heading,
@@ -205,32 +180,8 @@
     max-width: 250px;
 }
 
-.permissions-heading {
-    color: #EF6F53;
-    font-size: 1.35rem;
-    font-weight: bold;
-    letter-spacing: 0.05rem;
-    margin-bottom: 1rem;
-    margin-top: 0;
-    text-transform: uppercase;
-}
-
-.permission-item {
-    display: flex;
-    flex-direction: row;
-    gap: 5px;
-    border-radius: 4px;
-}
-
-.permission-item label {
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    font-size: 0.9rem;
-}
-
 .users-list {
-    width: 90%;
+    width: 70%;
     margin: auto;
     border-radius: 12px;
     overflow: hidden;
@@ -256,16 +207,6 @@
 
 }
 
-.business-head-section {
-    border-left: 4px solid #EF6F53;
-    padding-left: 1rem;
-}
-
-.team-leader-section {
-    border-left: 4px solid #2196f3;
-    padding-left: 1rem;
-}
-
 .user-section {
     border-left: 4px solid #4CAF50;
     padding-left: 1rem;
@@ -278,7 +219,7 @@
     letter-spacing: 0.05rem;
     padding: 0.15rem;
     margin-bottom: 0.5rem;
-    border-bottom: 2px solid #EF6F53;
+    border-bottom: 1px solid #EF6F53;
     text-transform: uppercase;
     text-align: center;
     position: relative;
@@ -314,7 +255,7 @@
     background-color: #364C63;
     font-weight: bold;
     color: white;
-    border-bottom: 2px solid #ddd;
+    border-bottom: 1px solid #ddd;
     border-radius: 6px 6px 0 0;
 }
 
@@ -322,14 +263,16 @@
     color: white;
     font-weight: bold;
     text-transform: uppercase;
+    font-size: 0.9rem;
 }
 
 .user-col {
     flex: 1;
-    padding: 0.15rem;
+    padding: 0.1rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 0.9rem;
 }
 
 .user-col:first-child {
@@ -340,25 +283,6 @@
 .user-col:nth-child(3) {
     text-transform: uppercase;
     font-weight: 500;
-}
-
-.user-col.role-team_leader {
-    color: #9c27b0;
-    font-weight: bold;
-}
-
-.user-col.role-user {
-    color: #4CAF50;
-}
-
-.user-col.role-business_head {
-    color: #007bff;
-    font-weight: bold;
-}
-
-.user-col.role-it_admin {
-    color: orangered;
-    font-weight: bold;
 }
 
 .permission-item {

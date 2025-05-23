@@ -225,13 +225,13 @@ const CreateForm = () => {
 
   return (
     <div>
-      <h2 className="create_form_headiii">New Record</h2>
+      <h2 className="create_form_headiii">New Enquiry</h2>
       <div className="create-form-container">
         <form onSubmit={handleSubmit} className="create-form">
           <div className="form-section">
             <div className="form-section-title">Basic Information</div>
             <div className="form-row">
-              <div className="label-input phone-field">
+              <div className="label-input ">
                 <label>Phone Number<span className="required"> *</span>:</label>
                 <input
                   type="tel"
@@ -255,7 +255,7 @@ const CreateForm = () => {
               </div>
             </div>
             <div className="form-row">
-              <div className="label-input email-field">
+              <div className="label-input">
                 <label>Email:</label>
                 <input
                   type="email"
@@ -264,7 +264,7 @@ const CreateForm = () => {
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="label-input phone-field">
+              <div className="label-input">
                 <label>Alternative Number:</label>
                 <input
                   type="text"
@@ -281,15 +281,16 @@ const CreateForm = () => {
             
             {/* First row: Address and Country */}
             <div className="form-row">
-              <div className="label-input address-field" style={{ flex: 2 }}>
+              <div className="label-input">
                 <label>Address:</label>
-                <textarea
+                <input 
+                  type="text"
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="label-input country-field" style={{ flex: 1 }}>
+              <div className="label-input">
                 <label>Country:</label>
                 <input
                   type="text"
@@ -302,7 +303,7 @@ const CreateForm = () => {
 
             {/* Second row: Designation and Disposition */}
             <div className="form-row">
-              <div className="label-input designation-field" style={{ flex: 1 }}>
+              <div className="label-input">
                 <label>Designation:</label>
                 <input
                   type="text"
@@ -311,7 +312,7 @@ const CreateForm = () => {
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="label-input disposition-field" style={{ flex: 1 }}>
+              <div className="label-input">
                 <label>Disposition:</label>
                 <select
                   name="disposition"
@@ -332,9 +333,10 @@ const CreateForm = () => {
 
             {/* Third row: Comment */}
             <div className="form-row">
-              <div className="label-input comment-field" style={{ flex: 1 }}>
+              <div className="label-input">
                 <label>Comment:</label>
-                <textarea
+                <input
+                  type="text"
                   name="comment"
                   value={formData.comment}
                   onChange={handleInputChange}
@@ -360,7 +362,7 @@ const CreateForm = () => {
             <div className="successs-message">Record created successfully!</div>
           )}
 
-          <div className="button-container">
+          <div className="buttonn-container">
             <button type="submit" className="submit-buttonn">
               Create Record
             </button>

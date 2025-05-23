@@ -530,7 +530,7 @@ const UseForm = () => {
                                     label: "Designation", name: "designation"
                                 },
                                 { 
-                                    label: "Queue Name", name: "QUEUE_NAME"
+                                    label: "Queue Name", name: "QUEUE_NAME", disabled: true
                                 }
                             ].map(({ label, name, type = "text", disabled, maxLength, required, pattern }) => (
                                 <div key={name} className="label-inputt">

@@ -207,11 +207,6 @@ const AdminPortal = () => {
 
     return (
         <div className="admin-portal-container">
-            {messageVisible && (error || success) && (
-                <div className={`message-container ${error ? 'error' : 'success'}`}>
-                    {error || success}
-                </div>
-            )}
             <div className="admin-portal">
                 <div className="section">
                     <h3 className='existing-user-heading'>Users</h3>
@@ -396,6 +391,13 @@ const AdminPortal = () => {
                             </div>
                         ))}
                     </div>
+
+                    {messageVisible && (error || success) && (
+                        <div className={`message-container ${error ? 'error' : 'success'}`}>
+                            {error || success}
+                        </div>
+                    )}
+                    
                     <div className="team-button-container">
                         <button onClick={handleCreateTeams} className="create-button">Create Team</button>
                     </div>

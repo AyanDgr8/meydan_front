@@ -279,8 +279,7 @@ const DownloadFile = () => {
                             className="datetime-input"
                             required
                         />
-                    </div>
-                    <div className="date-picker-wrapper">
+
                         <label htmlFor="end-date">End Date and Time *</label>
                         <input
                             id="end-date"

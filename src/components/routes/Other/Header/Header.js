@@ -136,7 +136,7 @@ const Header = () => {
                             type="text"
                             className="form-control form-cont"
                             aria-label="Team search input"
-                            placeholder="Search Team"
+                            placeholder="Search Company"
                             value={queueSearchQuery}
                             onChange={(e) => setQueueSearchQuery(e.target.value)}
                             onKeyDown={handleQueueKeyDown}
@@ -149,7 +149,7 @@ const Header = () => {
                             style={{ cursor: 'pointer' }}
                         />
                     </div>
-                    <div className="header-search">
+                    {/* <div className="header-search">
                         <input
                             type="text"
                             className="form-control form-cont"
@@ -166,7 +166,7 @@ const Header = () => {
                             onClick={handleSearch}
                             style={{ cursor: 'pointer' }}
                         />
-                    </div>
+                    </div> */}
 
                         {/* Upload button */}
                         {/* <div className="file-upload-section">

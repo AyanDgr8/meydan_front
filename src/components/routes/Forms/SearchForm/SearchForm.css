@@ -1,6 +1,5 @@
 /* src/components/routes/Forms/SearchForm/SearchForm.css */
 
-
 .list-container {
   display: flex; /* Use flexbox */
   flex-direction: column; /* Stack children vertically */
@@ -10,7 +9,7 @@
   border-radius: 5px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin: auto;
-  width: 90%;
+  width: 70%;
   text-align: left;
   transition: all 0.3s ease-in-out;
 }
@@ -138,30 +137,31 @@ padding: 0.25rem;
   background-color: #e3f2fd;
 }
 
-.header-container {
+.header-containerr {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 0.5rem;
 }
 
-.add-record-btnn {
+.add-record-btnnn {
   background-color: #EF6F53;
   color: white;
   border: none;
-  padding: 0.5rem ;
+  padding: 0.25rem 0.5rem;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 500;
+  margin-left: auto;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.add-record-btnn:hover {
+.add-record-btnnn:hover {
   background-color: #f8360b;
   transform: translateY(-1px);
 }
 
-.add-record-btnn:active {
+.add-record-btnnn:active {
   transform: translateY(0);
 }

@@ -1,14 +1,12 @@
 /* src/components/routes/Forms/CreateForm/CreateFormForm.css */
 
 .create-form-container {
-  height: 50vh;
-  padding: 1rem;
-  margin: 0 auto;
-  background: #fff;
+  padding: 0.5rem;
+  margin:auto;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
+  width: 70%;
 }
 
 .create_form_headiii {
@@ -16,7 +14,8 @@
   color: #EF6F53;
   font-size: 1.25rem;
   text-transform: uppercase;
-  font-weight: 600;
+  font-weight: 800;
+
 }
 
 .errorr-messagee, .successs-message {
@@ -49,7 +48,6 @@
   color: #1976d2;
   font-weight: 500;
   white-space: nowrap;
-  background: rgba(25, 118, 210, 0.1);
   padding: 1px;
   border-radius: 4px;
   border: 1px solid rgba(25, 118, 210, 0.2);
@@ -94,7 +92,7 @@
 .form-row {
   display: flex;
   gap: 1.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   align-items: flex-start;
 }
 
@@ -115,54 +113,37 @@
 .label-input {
   flex: 1;
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 0.5rem;
 }
 
 .label-input label {
-  flex: 0 0 25%;
+  flex: 0 0 auto;
   color: #333;
-  font-weight: 500;
-  font-size: 0.9rem;
-  padding: 0.4rem 1rem 0 0;
+  font-weight: 800;
+  font-size: 0.8rem;
   text-align: left;
-}
-
-/* Additional Details section specific styles */
-.form-section:last-of-type .label-input label {
-  text-align: left;
-  padding: 0.4rem 0.5rem 0 0;
+  min-width: 120px;
 }
 
 .label-input input,
-.label-input select,
-.label-input textarea {
+.label-input select {
   flex: 1;
-  width: 100%;
-  padding: 0.4rem 0.6rem;
+  padding: 0.25rem 0.5rem;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 0.9rem;
-  min-height: 36px;
-}
-
-.label-input textarea {
-  min-height: 60px;
-}
-
-.address-field textarea,
-.comment-field textarea {
-  height: 4rem;
+  font-size: 0.8rem;
 }
 
 .required {
   color: #d32f2f;
 }
 
-.button-container {
+.buttonn-container {
   text-align: center;
   padding: 0.25rem;
-  border-top: 1px solid #eee;
+  margin-top: 0.5rem;
 }
 
 .submit-buttonn {
@@ -195,125 +176,4 @@
   .form-section {
     padding: 0.5rem;
   }
-}
-
-.duplicate-dialog {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    max-width: 600px;
-    width: 90%;
-}
-
-.duplicate-dialog h3 {
-    color: #333;
-    margin-bottom: 15px;
-    font-size: 1.25rem;
-    font-weight: 600;
-    text-align: center; 
-    text-transform: uppercase;
-}
-
-.duplicate-dialog p {
-    color: #e74c3c;
-    margin-bottom: 20px;
-    font-size: 1rem;
-    font-weight: 600;
-    text-align: center; 
-    text-transform: uppercase;
-}
-
-.existing-record {
-    margin: 20px 0;
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.existing-record h4{
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 1rem;
-    font-weight: 600;
-    text-align: center; 
-    text-transform: uppercase;
-}
-
-.existing-record table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.existing-record th,
-.existing-record td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.existing-record th {
-    background-color: #364C63;
-    color: white;
-    font-weight: 600;
-}
-
-.duplicate-actionss {
-    margin-top: 20px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.duplicate-actionss h4 {
-    color: #333;
-    font-size: 1rem;
-    font-weight: 600;
-    text-align: center; 
-    text-transform: uppercase;
-    margin-bottom: 15px;
-}
-
-.action-containerr {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-.duplicate-action-selectt {
-    width: 50%;
-    padding: 2px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    font-size: 0.875rem;
-    color: #323232;
-    background-color: white;
-}
-
-.button-group {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    width: 100%;
-    max-width: 400px;
-}
-
-.action-buttonnn-continue {
-    background-color: green;
-    color: white;
-}
-
-.action-buttonnn-continue:hover {
-    background-color: #27ae60;
 }

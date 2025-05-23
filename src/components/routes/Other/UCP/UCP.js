@@ -42,13 +42,22 @@ const UCP = ({ isLoggedIn = true }) => {
     setIsDragging(false);
   };
 
+  // Handler for UCP incoming calls
+  const handleUCPMessage = (event) => {
+    if (event.data.type === "UCP_INCOMING_CALL") {
+      console.log('INCOMING CALL FROM UCP: ', event.data);
+    }
+  };
+
   useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('message', handleUCPMessage, false);
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('message', handleUCPMessage, false);
     };
   }, [isDragging, startPos]);
 

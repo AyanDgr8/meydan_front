@@ -97,14 +97,14 @@ const TeamForm = () => {
 
     return (
         <div className="team-form-container">
-            <div className="team-header">
-                <div className="team-title">
-                    <h1 className="team-namee">{teamDetails.team_name}</h1>
-                    <p className="team-prompt"><strong>PROMPT:</strong> <i>{teamDetails.team_prompt || 'No team prompt available'}</i></p>
-                </div>
+            <div className="team-titlee">
+                <h1 className="team-namee">{teamDetails.team_name}</h1>
                 <button className="view-records-btn" onClick={handleViewRecords}>
                     View Records
                 </button>
+            </div>
+            <div>
+                <p className="team-prompt"><strong>PROMPT:</strong> <i>{teamDetails.team_prompt || 'No team prompt available'}</i></p>
             </div>
 
             <div className="team-info">
