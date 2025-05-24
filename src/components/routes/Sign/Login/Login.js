@@ -130,9 +130,9 @@ const Login = () => {
                 // Store token and admin data
                 localStorage.setItem('token', token);
                 localStorage.setItem('admin', JSON.stringify(adminData));
-                
-                // Navigate to admin dashboard
-                navigate('/admin', { replace: true });
+
+                // Reload the page instead of using navigate
+                window.location.reload();
             } else {
                 throw new Error('Invalid response from server');
             }

@@ -1,22 +1,25 @@
 // src/components/routes/Other/UCP/UCP.js
 
 import React, { useState, useRef, useEffect } from 'react';
+import {useNavigate} from 'react-router-dom';
 import './UCP.css';
 
 const UCP = ({ isLoggedIn = true }) => { 
+  const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const popupContainerRef = useRef(null);
   const iframeRef = useRef(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const ucpUrl = 'https://ucdemo.voicemeetme.com/ucp/login';
 
   const handleOpenPopup = () => {
     setShowPopup(true);
   };
 
   const handleMinimize = () => {
-    setShowPopup(false); // Hide the popup when minimized
+    setShowPopup(false);
   };
 
   const handleMouseDown = (e) => {
@@ -44,8 +47,44 @@ const UCP = ({ isLoggedIn = true }) => {
 
   // Handler for UCP incoming calls
   const handleUCPMessage = (event) => {
-    if (event.data.type === "UCP_INCOMING_CALL") {
-      console.log('INCOMING CALL FROM UCP: ', event.data);
+    // Verify origin for security
+    if (event.origin !== new URL(ucpUrl).origin) {
+      console.warn('Received message from unauthorized origin:', event.origin);
+      return;
+    }
+
+    try {
+      // Handle different message types
+      switch (event.data.type) {
+        case 'UCP_INCOMING_CALL':
+          console.info('Incoming call from ======= :', event.data.payload.queue_name);
+          // Show the UCP window if minimized
+          setShowPopup(true);
+          // Bring window to front
+          if (popupContainerRef.current) {
+            popupContainerRef.current.style.zIndex = '9999';
+          }
+          navigate(`/team/${event.data.payload.queue_name}`);
+          break;
+
+        case 'UCP_SESSION_CREATED':
+          console.info('UCP session created:', event.data.sessionId);
+          break;
+
+        case 'UCP_FULLSCREEN_CHANGE':
+          if (event.data.isFullscreen && popupContainerRef.current) {
+            popupContainerRef.current.style.width = '100%';
+            popupContainerRef.current.style.height = '100%';
+            popupContainerRef.current.style.transform = 'none';
+            setPosition({ x: 0, y: 0 });
+          }
+          break;
+
+        default:
+          console.info('Received UCP message:', event.data);
+      }
+    } catch (error) {
+      console.error('Error handling UCP message:', error);
     }
   };
 
@@ -91,7 +130,7 @@ const UCP = ({ isLoggedIn = true }) => {
         </div>
         <iframe 
           ref={iframeRef}
-          src="https://ucdemo.voicemeetme.com/ucp/login" 
+          src={ucpUrl}
           title="UCP Embedded"
           className="ucp-iframe"
           allow="microphone; camera; autoplay"

@@ -7,6 +7,8 @@ import Afirst from '../routes/Afirst/Afirst';
 import Landing from '../routes/Landing/Landing';
 import { PopupProvider } from '../../context/PopupContext';
 import Popup from '../routes/Other/Popup/Popup';
+import UCP from '../routes/Other/UCP/UCP';
+
 
 // PopupWrapper component to render the Popup
 const PopupWrapper = () => {
@@ -14,11 +16,14 @@ const PopupWrapper = () => {
 };
 
 const Main = () => {
+  // Determine if user is logged in (using the same approach as in your existing authentication system)
+  const isLoggedIn = localStorage.getItem('token') || sessionStorage.getItem('token');
     return (
         <Router>
             <PopupProvider>
                 {/* Render Popup component */}
                 <PopupWrapper />
+                <UCP isLoggedIn={isLoggedIn}/>
                 
                 {/* Main content */}
                 <div className="main-content">
