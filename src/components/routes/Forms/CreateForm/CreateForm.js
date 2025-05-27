@@ -142,10 +142,10 @@ const CreateForm = () => {
     }
   };
 
-  // Handle scheduled_at click
-  const handleScheduledAtClick = () => {
-    console.log('Scheduling a call');
-  };
+  // // Handle scheduled_at click
+  // const handleScheduledAtClick = () => {
+  //   console.log('Scheduling a call');
+  // };
 
   // Validate required fields
   const validateRequiredFields = () => {

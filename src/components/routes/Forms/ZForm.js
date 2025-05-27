@@ -18,6 +18,7 @@ import DownloadFile from "../Other/Header/Download/DownloadFile";
 import ApproveUser from "../Sign/ApproveUser/ApproveUser";
 import AdminPortal from "./AdminPortal/AdminPortal";
 import TeamForm from "./TeamForm/TeamForm";
+import Business from "./AdminPortal/Business";
 
 const ZForm = () => {
     return (
@@ -25,6 +26,8 @@ const ZForm = () => {
 
             {/* Admin Portal - Protected by AdminGuard */}
             <Route path="/admin" element={<AdminPortal />} />
+            
+            <Route path="/business" element={<Business />} />
 
             {/* Search for a customer */}
             <Route path="/customers/search" element={<SearchForm />} />
