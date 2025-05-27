@@ -504,7 +504,7 @@ const UseForm = () => {
                             {[
                                 ...(editingInfo ? [
                                     { 
-                                        label: "Customer Name", name: "customer_name", required: true
+                                        label: "Name", name: "customer_name", required: true
                                     },
                                     { 
                                         label: "Phone", name: "phone_no_primary", required: true,
@@ -513,7 +513,7 @@ const UseForm = () => {
                                     }
                                 ] : []),
                                 { 
-                                    label: "Alternate Phone", name: "phone_no_secondary", 
+                                    label: "Alt Phone", name: "phone_no_secondary", 
                                     type: "tel", maxLength: "15",
                                     pattern: "^\\+?[0-9]{8,14}$"
                                 },
@@ -622,13 +622,12 @@ const UseForm = () => {
                     )}
                 </div>
 
-                <div>
-                    {/* Pass customerId to LastChanges */}
+                {/* <div>
                     <LastChanges 
                         customerId={customer?.id || ''} 
                         phone_no_primary={formData?.phone_no_primary || ''}
                     />
-                </div>
+                </div> */}
             </div>
 
         </div>

@@ -1,3 +1,5 @@
+// src/components/routes/Forms/CreateForm/CreateForm.js
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
@@ -185,19 +187,70 @@ const CreateForm = () => {
       );
 
       if (response.data.success) {
-        setFormSuccess(true);
-        setError('');
-        resetForm();
-        setTimeout(() => {
-          navigate(`/team/${formData.QUEUE_NAME}`);
-        }, 2000);
+        try {
+          // Send email notification first
+          await axios.post(
+            `${process.env.REACT_APP_API_URL}/send-customer-email`,
+            {
+              customerId: response.data.customerId,
+              teamId: response.data.customer.team_id
+            },
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+
+          // Then try to send WhatsApp notification
+          try {
+            await axios.post(
+              `${process.env.REACT_APP_API_URL}/send-whatsapp`,
+              {
+                customerId: response.data.customerId,
+                teamId: response.data.customer.team_id
+              },
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              }
+            );
+          } catch (whatsappError) {
+            console.error('Failed to send WhatsApp notification:', whatsappError);
+            if (whatsappError.response?.data?.code === 'WHATSAPP_NOT_READY') {
+              setError('Record created successfully, but WhatsApp message could not be sent - WhatsApp is not ready');
+            } else if (whatsappError.response?.data?.error?.code === 'ECONNREFUSED') {
+              setError('Record created successfully, but WhatsApp message could not be sent - WhatsApp is disconnected');
+            } else {
+              setError('Record created successfully, but WhatsApp message could not be sent');
+            }
+          }
+
+          setFormSuccess(true);
+          setTimeout(() => {
+            navigate(`/team/${formData.QUEUE_NAME}`);
+          }, 2000);
+
+        } catch (notificationError) {
+          console.error('Failed to send notifications:', notificationError);
+          setFormSuccess(true);
+          setError('Record created successfully, but notifications could not be sent');
+          setTimeout(() => {
+            navigate(`/team/${formData.QUEUE_NAME}`);
+          }, 2000);
+        }
       }
     } catch (err) {
       if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
-        setError("An error occurred while creating the customer.");
+        setError('An error occurred while creating the record.');
       }
+      setFormSuccess(false);
+      console.error('Error creating record:', err);
     }
   };
 
