@@ -13,6 +13,7 @@ const Header = () => {
     const [queueSearchQuery, setQueueSearchQuery] = useState('');
     const [username, setUsername] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [userRole, setUserRole] = useState('');
     const navigate = useNavigate(); 
 
     const fetchUser = async () => {
@@ -30,7 +31,10 @@ const Header = () => {
                 },
             });
             
+            console.log('User data from API:', response.data);
             setUsername(response.data.username || '');
+            setUserRole(response.data.role || '');
+            console.log('Set user role to:', response.data.role);
         } catch (error) {
             console.error('Error fetching user data:', error);
         } finally {
@@ -197,7 +201,9 @@ const Header = () => {
                                 aria-label="Profile"
                             />
                             <div className="dropdown-content">
-                                <Link to="/brand">Brand Management</Link>
+                                {userRole !== 'brand_user' && (
+                                    <Link to="/brand">Brand Management</Link>
+                                )}
                                 <Link to="/business">Business Center Management</Link>
                                 <Link to="/receptionist">Receptionist Management</Link>
                                 <Link to="/admin">Companies and Users</Link>

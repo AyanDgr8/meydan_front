@@ -1,18 +1,21 @@
 // src/components/routes/Forms/AdminPortal/Business/Center.js
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Center.css';
 
 const Center = () => {
     const { businessId } = useParams();
+    const navigate = useNavigate();
     const [business, setBusiness] = useState(null);
     const [teams, setTeams] = useState([]);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [messageVisible, setMessageVisible] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
+
+    console.log('Current businessId from URL:', businessId);
 
     const [newUser, setNewUser] = useState({
         username: '',
@@ -36,6 +39,11 @@ const Center = () => {
     }]);
 
     useEffect(() => {
+        if (!businessId) {
+            console.error('No business ID provided');
+            setError('No business ID provided');
+            return;
+        }
         fetchBusiness();
         fetchTeams();
     }, [businessId]);
@@ -56,13 +64,28 @@ const Center = () => {
     const fetchTeams = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/business/${businessId}/teams`, {
+            const endpoint = `${process.env.REACT_APP_API_URL}/business/${businessId}/teams`;
+            console.log('Fetching teams from:', endpoint);
+            console.log('Business ID:', businessId);
+            
+            const response = await axios.get(endpoint, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setTeams(response.data.teams || []);
+            console.log('Raw API response:', response.data);
+            
+            if (!response.data?.teams || !Array.isArray(response.data.teams)) {
+                console.error('Invalid teams data:', response.data);
+                setError('Invalid teams data received');
+                setTeams([]);
+                return;
+            }
+
+            setTeams(response.data.teams);
+            console.log('Teams after setting state:', response.data.teams);
         } catch (error) {
-            console.error('Error fetching teams:', error);
+            console.error('Error fetching teams:', error.response || error);
             setError('Error fetching teams');
+            setTeams([]);
         }
     };
 
@@ -168,8 +191,30 @@ const Center = () => {
     }
 
     return (
-        <div className="center-container">
-            <h2 className="business-name">{business.business_name}</h2>
+        <div className="business-center-container">
+            <h2 className='business-name'>{business?.business_name || 'Business Center'}</h2>
+            
+            {/* Teams List Section */}
+            <div className="teams-list-section">
+                <h3>Companies</h3>
+                <div className="teams-grid">
+                    {teams.map((team, index) => (
+                        <div 
+                            key={team.id} 
+                            className="team-card"
+                            onClick={() => navigate(`/business/${businessId}/team/${encodeURIComponent(team.team_name)}`)}
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <h4>{team.team_name}</h4>
+                            <div className="team-details">
+                                <p><strong>Email:</strong> {team.team_email}</p>
+                                <p><strong>Phone:</strong> {team.team_phone}</p>
+                                <p><strong>Country:</strong> {team.team_country}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
             {messageVisible && (error || success) && (
                 <div className={`message-container ${error ? 'error' : 'success'}`}>

@@ -6,7 +6,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './TeamForm.css';
 
 const TeamForm = () => {
-    const { teamName } = useParams();
+    const { teamName, businessId: routeBusinessId } = useParams();
     const navigate = useNavigate();
     const [teamDetails, setTeamDetails] = useState(null);
     const [teamMembers, setTeamMembers] = useState([]);
@@ -29,38 +29,75 @@ const TeamForm = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 };
 
-                // First get all teams
-                const teamsResponse = await axios.get(`${apiUrl}/team/players/teams`, config);
-                console.log('Teams response:', teamsResponse.data); // Debug log
+                let userData = JSON.parse(localStorage.getItem('user') || '{}');
+                console.log('User data:', userData);
+                
+                // Use businessId from route params if available, otherwise from localStorage
+                let businessId = routeBusinessId || localStorage.getItem('businessId');
+                console.log('Initial businessId:', businessId, 'from route:', routeBusinessId);
 
-                if (!teamsResponse.data) {
-                    throw new Error('No teams data received');
+                if (!businessId) {
+                    // For brand users, use brand_id if business_center_id is not available
+                    businessId = userData.brand_id || userData.business_center_id;
+                    console.log('Using ID from userData:', businessId, 'brand_id:', userData.brand_id, 'business_center_id:', userData.business_center_id);
+                    if (businessId) {
+                        localStorage.setItem('businessId', businessId);
+                    }
+                }
+                
+                if (!businessId) {
+                    throw new Error('Business/Brand ID not found. Please log in again.');
                 }
 
-                // Find the specific team
-                const team = teamsResponse.data.find(t => t.team_name === teamName);
-                console.log('Found team:', team); // Debug log
+                // Get teams from the business endpoint
+                const endpoint = `${apiUrl}/business/${businessId}/teams`;
+                
+                console.log('Fetching teams from:', endpoint, 'with config:', config);
+                const teamsResponse = await axios.get(endpoint, config);
+                console.log('Teams response:', teamsResponse.data);
+                
+                // Teams data is always in response.data.teams
+                const teamsData = teamsResponse.data?.teams;
 
+                if (!teamsData || !Array.isArray(teamsData)) {
+                    console.error('Invalid teams data:', teamsResponse.data);
+                    throw new Error(`No teams data received. Response: ${JSON.stringify(teamsResponse.data)}`);
+                }
+
+                console.log('Available teams:', teamsData.map(t => t.team_name));
+
+                // Decode the team name from URL
+                const decodedTeamName = decodeURIComponent(teamName);
+                console.log('Looking for team:', decodedTeamName);
+
+                // Find the specific team (case-insensitive)
+                const team = teamsData.find(t => 
+                    t.team_name.toLowerCase() === decodedTeamName.toLowerCase()
+                );
+                
                 if (!team) {
-                    throw new Error(`Team ${teamName} not found`);
+                    throw new Error(`Team "${decodedTeamName}" not found. Available teams: ${teamsData.map(t => t.team_name).join(', ')}`);
                 }
+
                 setTeamDetails(team);
 
-                // Then fetch users for this team
-                const usersResponse = await axios.get(`${apiUrl}/players/users`, config);
-                console.log('Users response:', usersResponse.data); // Debug log
+                // Get team members - always use business endpoint
+                const membersEndpoint = `${apiUrl}/business/${businessId}/team/${team.id}/members`;
+                console.log('Fetching members from:', membersEndpoint);
+                
+                const membersResponse = await axios.get(membersEndpoint, config);
+                console.log('Members response:', membersResponse.data);
+                
+                // Members data is in response.data.data
+                const membersData = membersResponse.data?.data;
 
-                if (usersResponse.data && usersResponse.data.data) {
-                    // Filter users for this team
-                    const teamUsers = usersResponse.data.data.filter(user => user.team_id === team.id);
-                    console.log('Team users:', teamUsers); // Debug log
-                    setTeamMembers(teamUsers);
+                if (membersData && Array.isArray(membersData)) {
+                    setTeamMembers(membersData);
                 }
                 
                 setIsLoading(false);
             } catch (err) {
-                console.error('Error fetching team details:', err);
-                setError(err.response?.data?.message || 'Failed to load team details');
+                setError(err.message || 'Failed to load team details');
                 setIsLoading(false);
                 if (err.response?.status === 401) {
                     localStorage.removeItem('token');
@@ -69,17 +106,19 @@ const TeamForm = () => {
             }
         };
 
-        fetchTeamDetails();
-    }, [teamName, apiUrl, navigate]);
+        if (teamName) {
+            fetchTeamDetails();
+        }
+    }, [teamName, navigate, apiUrl]);
 
     const handleViewRecords = () => {
         if (teamDetails) {
-            navigate(`/customers/search?team=${teamDetails.team_name}`);
+            navigate(`/customers/search?team=${encodeURIComponent(teamDetails.team_name)}`);
         }
     };
 
     const handleAddRecord = () => {
-        navigate(`/customers/create?team=${teamDetails.team_name}`);
+        navigate(`/customers/create?team=${encodeURIComponent(teamDetails.team_name)}`);
     };
 
 
@@ -97,8 +136,8 @@ const TeamForm = () => {
 
     return (
         <div className="team-form-container">
-            <div className="team-titlee">
-                <h1 className="team-namee">{teamDetails.team_name}</h1>
+            <div className="team-title">
+                <h1 className="team-name">{teamDetails.team_name}</h1>
                 <button className="view-records-btn" onClick={handleViewRecords}>
                     View Records
                 </button>

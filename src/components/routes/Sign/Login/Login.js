@@ -128,15 +128,24 @@ const Login = () => {
                 // Store token and user data
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(userData));
+                
+                // Store the appropriate ID based on user role
+                if (userData.role === 'brand_user') {
+                    localStorage.setItem('businessId', userData.brand_id);
+                } else {
+                    localStorage.setItem('businessId', userData.business_center_id);
+                }
 
-                // Redirect based on user role
-                if (userData.isAdmin) {
+                // Redirect based on role
+                if (userData.role === 'admin') {
+                    navigate('/admin', { replace: true });
+                } else if (userData.role === 'brand_admin') {
                     navigate('/brand', { replace: true });
                 } else if (userData.role === 'brand_user') {
                     navigate('/business', { replace: true });
                 } else if (userData.role === 'receptionist') {
                     navigate('/receptionist', { replace: true });
-                } 
+                }
             } else {
                 throw new Error('Invalid response from server');
             }
