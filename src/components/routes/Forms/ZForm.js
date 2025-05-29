@@ -33,7 +33,11 @@ const ZForm = () => {
             {/* Business Center Management Routes */}
             <Route path="/business" element={<Business />} />
             <Route path="/business/center/:businessId" element={<Center />} />
+            <Route path="/business/:businessId/teams" element={<Center />} />
             <Route path="/business/:businessId/team/:teamName" element={<TeamForm />} />
+            
+            {/* Alternative business center route */}
+            <Route path="/business/:teamName" element={<TeamForm />} />
             
             <Route path="/brand" element={<Brand />} />
 

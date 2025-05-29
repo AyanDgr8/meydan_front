@@ -201,7 +201,7 @@ const Header = () => {
                                 aria-label="Profile"
                             />
                             <div className="dropdown-content">
-                                {userRole !== 'brand_user' && (
+                                {userRole === 'admin' && (
                                     <Link to="/brand">Brand Management</Link>
                                 )}
                                 <Link to="/business">Business Center Management</Link>

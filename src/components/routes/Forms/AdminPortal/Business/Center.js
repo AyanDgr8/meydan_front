@@ -1,6 +1,6 @@
 // src/components/routes/Forms/AdminPortal/Business/Center.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Center.css';
@@ -14,8 +14,6 @@ const Center = () => {
     const [success, setSuccess] = useState('');
     const [messageVisible, setMessageVisible] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({});
-
-    console.log('Current businessId from URL:', businessId);
 
     const [newUser, setNewUser] = useState({
         username: '',
@@ -38,40 +36,14 @@ const Center = () => {
         team_detail: ''
     }]);
 
-    useEffect(() => {
-        if (!businessId) {
-            console.error('No business ID provided');
-            setError('No business ID provided');
-            return;
-        }
-        fetchBusiness();
-        fetchTeams();
-    }, [businessId]);
-
-    const fetchBusiness = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/business/${businessId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setBusiness(response.data);
-        } catch (error) {
-            console.error('Error fetching business:', error);
-            setError('Error fetching business details');
-        }
-    };
-
-    const fetchTeams = async () => {
+    const fetchTeams = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
             const endpoint = `${process.env.REACT_APP_API_URL}/business/${businessId}/teams`;
-            console.log('Fetching teams from:', endpoint);
-            console.log('Business ID:', businessId);
             
             const response = await axios.get(endpoint, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            console.log('Raw API response:', response.data);
             
             if (!response.data?.teams || !Array.isArray(response.data.teams)) {
                 console.error('Invalid teams data:', response.data);
@@ -81,13 +53,43 @@ const Center = () => {
             }
 
             setTeams(response.data.teams);
-            console.log('Teams after setting state:', response.data.teams);
         } catch (error) {
             console.error('Error fetching teams:', error.response || error);
             setError('Error fetching teams');
             setTeams([]);
         }
-    };
+    }, [businessId]);
+
+    useEffect(() => {
+        const fetchBusiness = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/business/${businessId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setBusiness(response.data);
+            } catch (error) {
+                console.error('Error fetching business:', error);
+                setError('Error fetching business details');
+            }
+        };
+
+        const fetchData = async () => {
+            if (!businessId) {
+                console.error('No business ID provided');
+                setError('No business ID provided');
+                return;
+            }
+            try {
+                await fetchBusiness();
+                await fetchTeams();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, [businessId, fetchTeams]);
 
     const handleUserInputChange = (field, value) => {
         setNewUser(prev => ({
@@ -221,63 +223,6 @@ const Center = () => {
                     {error || success}
                 </div>
             )}
-
-            <div className="sectionnnn">
-                <h3 className='create-user-heading'>Create Associate</h3>
-                <div className="user-formm">
-                    <div className="user-inputs">
-                        <input
-                            type="text"
-                            value={newUser.username}
-                            onChange={(e) => handleUserInputChange('username', e.target.value)}
-                            placeholder="Username"
-                            className={fieldErrors.username ? 'error-field' : ''}
-                        />
-                        <input
-                            type="email"
-                            value={newUser.email}
-                            onChange={(e) => handleUserInputChange('email', e.target.value)}
-                            placeholder="Email"
-                            className={fieldErrors.email ? 'error-field' : ''}
-                        />
-                        <input
-                            type="text"
-                            value={newUser.mobile_num}
-                            onChange={(e) => handleUserInputChange('mobile_num', e.target.value)}
-                            placeholder="Mobile Number"
-                            className={fieldErrors.mobile_num ? 'error-field' : ''}
-                        />
-                        <input
-                            type="text"
-                            value={newUser.mobile_num_2}
-                            onChange={(e) => handleUserInputChange('mobile_num_2', e.target.value)}
-                            placeholder="Alter Mobile Number"
-                            className={fieldErrors.mobile_num_2 ? 'error-field' : ''}
-                        />
-                        <input
-                            type="text"
-                            value={newUser.designation}
-                            onChange={(e) => handleUserInputChange('designation', e.target.value)}
-                            placeholder="Designation"
-                            className={fieldErrors.designation ? 'error-field' : ''}
-                        />
-                        <select
-                            value={newUser.team_id}
-                            onChange={(e) => handleUserInputChange('team_id', e.target.value)}
-                            className={fieldErrors.team_id ? 'error-field' : ''}
-                        >
-                            <option value="">Select Team</option>
-                            {teams.map(team => (
-                                <option key={team.id} value={team.id}>{team.team_name}</option>
-                            ))}
-                        </select>
-                        {fieldErrors.team_id && <div className="error-messaage">{fieldErrors.team_id}</div>}
-                    </div>
-
-                    <button onClick={handleCreateUser} className="create-button">Create Associate</button>
-                </div>
-            </div>
-
             <div className="sectionnnn">
                 <h3 className='create-team-heading'>Create Company</h3>
                 <div className='team-inputsss'>
@@ -364,6 +309,63 @@ const Center = () => {
                     <button onClick={handleCreateTeams} className="create-button">Create Company</button>
                 </div>
             </div>
+
+            <div className="sectionnnn">
+                <h3 className='create-user-heading'>Create Associate</h3>
+                <div className="user-formm">
+                    <div className="user-inputs">
+                        <input
+                            type="text"
+                            value={newUser.username}
+                            onChange={(e) => handleUserInputChange('username', e.target.value)}
+                            placeholder="Username"
+                            className={fieldErrors.username ? 'error-field' : ''}
+                        />
+                        <input
+                            type="email"
+                            value={newUser.email}
+                            onChange={(e) => handleUserInputChange('email', e.target.value)}
+                            placeholder="Email"
+                            className={fieldErrors.email ? 'error-field' : ''}
+                        />
+                        <input
+                            type="text"
+                            value={newUser.mobile_num}
+                            onChange={(e) => handleUserInputChange('mobile_num', e.target.value)}
+                            placeholder="Mobile Number"
+                            className={fieldErrors.mobile_num ? 'error-field' : ''}
+                        />
+                        <input
+                            type="text"
+                            value={newUser.mobile_num_2}
+                            onChange={(e) => handleUserInputChange('mobile_num_2', e.target.value)}
+                            placeholder="Alter Mobile Number"
+                            className={fieldErrors.mobile_num_2 ? 'error-field' : ''}
+                        />
+                        <input
+                            type="text"
+                            value={newUser.designation}
+                            onChange={(e) => handleUserInputChange('designation', e.target.value)}
+                            placeholder="Designation"
+                            className={fieldErrors.designation ? 'error-field' : ''}
+                        />
+                        <select
+                            value={newUser.team_id}
+                            onChange={(e) => handleUserInputChange('team_id', e.target.value)}
+                            className={fieldErrors.team_id ? 'error-field' : ''}
+                        >
+                            <option value="">Select Company</option>
+                            {teams.map(team => (
+                                <option key={team.id} value={team.id}>{team.team_name}</option>
+                            ))}
+                        </select>
+                        {fieldErrors.team_id && <div className="error-messaage">{fieldErrors.team_id}</div>}
+                    </div>
+
+                    <button onClick={handleCreateUser} className="create-button">Create Associate</button>
+                </div>
+            </div>
+
         </div>
     );
 };

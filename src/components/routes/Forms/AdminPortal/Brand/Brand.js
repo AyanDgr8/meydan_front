@@ -154,7 +154,7 @@ const Brand = () => {
     };
 
     const handleCardClick = (brandId) => {
-        navigate(`/business-centers/${brandId}`);
+        navigate(`/business/${brandId}/teams`);
     };
 
     const resetForm = () => {

@@ -48,7 +48,8 @@ const Business = () => {
             setIsLoading(false);
         } catch (error) {
             console.error('Error fetching businesses:', error);
-            setError('Error fetching businesses');
+            setError(error.response?.data?.message || 'You do not have access to any business centers');
+            setBusinesses([]);
             setIsLoading(false);
         }
     };
@@ -388,6 +389,12 @@ const Business = () => {
 
             <div className="businesses-list">
                 <h3 className="business-list-title">Business List</h3>
+                {error && <div className="error-message">{error}</div>}
+                {businesses.length === 0 && !error && !isLoading && (
+                    <div className="no-businesses-message">
+                        No business centers found. Create one using the form above.
+                    </div>
+                )}
                 <div className="business-cards-container">
                     {businesses.map(business => (
                         <div 

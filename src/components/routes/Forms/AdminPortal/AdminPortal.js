@@ -72,8 +72,10 @@ const AdminPortal = () => {
         try {
             setIsLoading(true);
             const response = await api.get('/team/players/teams');
-            if (response.data) {
-                setTeams(response.data);
+            if (response.data && response.data.teams) {
+                setTeams(response.data.teams);
+            } else {
+                setTeams([]); // Set empty array if no teams
             }
         } catch (err) {
             console.error('Error fetching teams:', err);
@@ -83,6 +85,7 @@ const AdminPortal = () => {
                 localStorage.removeItem('token');
                 navigate('/login');
             }
+            setTeams([]); // Set empty array on error
         } finally {
             setIsLoading(false);
         }
@@ -210,7 +213,7 @@ const AdminPortal = () => {
             <div className="admin-portal">
 
 
-            <div className="sectionnn">
+            {/* <div className="sectionnn">
                     <h3 className='create-user-heading'>Create Associate</h3>
                     <div className="user-formm">
                         <div className="user-inputs">
@@ -359,10 +362,10 @@ const AdminPortal = () => {
                     <div className="team-button-container">
                         <button onClick={handleCreateTeams} className="create-button">Create Team</button>
                     </div>
-                </div>
+                </div> */}
                 
                 <div className="section">
-                    <h3 className='existing-user-heading'>Associates</h3>
+                    <h3 className='existing-user-heading'>All Associates</h3>
                     <div className="users-list">
                         {/* Group users by team */}
                         {teams.map(team => {

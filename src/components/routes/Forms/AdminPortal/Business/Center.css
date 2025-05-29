@@ -27,8 +27,8 @@
     border-bottom: 3px solid #EF6F53;
     display: inline-block;
     position: relative;
-    left: 50%;
-    transform: translateX(-50%);
+    /* left: 50%; */
+    /* transform: translateX(-50%); */
 }
 
 .section {

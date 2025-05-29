@@ -32,36 +32,45 @@ const TeamForm = () => {
                 let userData = JSON.parse(localStorage.getItem('user') || '{}');
                 console.log('User data:', userData);
                 
-                // Use businessId from route params if available, otherwise from localStorage
-                let businessId = routeBusinessId || localStorage.getItem('businessId');
-                console.log('Initial businessId:', businessId, 'from route:', routeBusinessId);
-
-                if (!businessId) {
-                    // For brand users, use brand_id if business_center_id is not available
-                    businessId = userData.brand_id || userData.business_center_id;
-                    console.log('Using ID from userData:', businessId, 'brand_id:', userData.brand_id, 'business_center_id:', userData.business_center_id);
-                    if (businessId) {
-                        localStorage.setItem('businessId', businessId);
+                // Check if we're using the business-center URL format
+                const isBusinessCenterUrl = window.location.pathname.startsWith('/business/center');
+                
+                let apiEndpoint;
+                if (isBusinessCenterUrl) {
+                    // For business-center URL, use the new endpoint
+                    apiEndpoint = `${process.env.REACT_APP_API_URL}/business/center/${encodeURIComponent(teamName)}`;
+                    // Only add business_center_id if it exists
+                    const businessCenterId = userData.business_center_id || localStorage.getItem('businessId');
+                    if (businessCenterId && businessCenterId !== 'null') {
+                        apiEndpoint += `?business_center_id=${businessCenterId}`;
                     }
+                    console.log('Business center URL format with endpoint:', apiEndpoint);
+                } else {
+                    // For traditional URL, use the business ID endpoint
+                    const businessId = routeBusinessId || localStorage.getItem('businessId') || userData.brand_id || userData.business_center_id;
+                    if (!businessId || businessId === 'null') {
+                        throw new Error('Business/Brand ID not found. Please log in again.');
+                    }
+                    apiEndpoint = `${process.env.REACT_APP_API_URL}/business/${businessId}/teams`;
+                    console.log('Traditional URL format with endpoint:', apiEndpoint);
                 }
                 
-                if (!businessId) {
-                    throw new Error('Business/Brand ID not found. Please log in again.');
+                console.log('Using API endpoint:', apiEndpoint);
+                const response = await axios.get(apiEndpoint, config);
+                console.log('API Response:', response.data);
+
+                let teamsData;
+                if (isBusinessCenterUrl) {
+                    // For business-center URL, response contains a single team
+                    teamsData = response.data.team ? [response.data.team] : [];
+                } else {
+                    // For traditional URL, response contains an array of teams
+                    teamsData = response.data.teams || [];
                 }
-
-                // Get teams from the business endpoint
-                const endpoint = `${apiUrl}/business/${businessId}/teams`;
                 
-                console.log('Fetching teams from:', endpoint, 'with config:', config);
-                const teamsResponse = await axios.get(endpoint, config);
-                console.log('Teams response:', teamsResponse.data);
-                
-                // Teams data is always in response.data.teams
-                const teamsData = teamsResponse.data?.teams;
-
-                if (!teamsData || !Array.isArray(teamsData)) {
-                    console.error('Invalid teams data:', teamsResponse.data);
-                    throw new Error(`No teams data received. Response: ${JSON.stringify(teamsResponse.data)}`);
+                if (!Array.isArray(teamsData)) {
+                    console.error('Invalid teams data:', teamsData);
+                    throw new Error('Invalid response format from server');
                 }
 
                 console.log('Available teams:', teamsData.map(t => t.team_name));
@@ -70,19 +79,21 @@ const TeamForm = () => {
                 const decodedTeamName = decodeURIComponent(teamName);
                 console.log('Looking for team:', decodedTeamName);
 
-                // Find the specific team (case-insensitive)
-                const team = teamsData.find(t => 
-                    t.team_name.toLowerCase() === decodedTeamName.toLowerCase()
-                );
+                // Find the specific team (case-insensitive and handle both spaces and underscores)
+                const team = teamsData.find(t => {
+                    const normalizedTeamName = t.team_name.replace(/_/g, ' ');
+                    const normalizedSearchName = decodedTeamName.replace(/_/g, ' ');
+                    return normalizedTeamName.toLowerCase() === normalizedSearchName.toLowerCase();
+                });
                 
                 if (!team) {
-                    throw new Error(`Team "${decodedTeamName}" not found. Available teams: ${teamsData.map(t => t.team_name).join(', ')}`);
+                    throw new Error(`Team "${decodedTeamName}" not found. Available teams: ${teamsData.map(t => t.team_name.replace(/_/g, ' ')).join(', ')}`);
                 }
 
                 setTeamDetails(team);
 
                 // Get team members - always use business endpoint
-                const membersEndpoint = `${apiUrl}/business/${businessId}/team/${team.id}/members`;
+                const membersEndpoint = `${apiUrl}/business/${team.business_id}/team/${team.id}/members`;
                 console.log('Fetching members from:', membersEndpoint);
                 
                 const membersResponse = await axios.get(membersEndpoint, config);

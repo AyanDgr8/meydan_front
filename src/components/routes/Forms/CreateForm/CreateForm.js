@@ -8,6 +8,7 @@ import "./CreateForm.css";
 const CreateForm = () => {
   const { phone_no_primary } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     customer_name: '',
     phone_no_primary: phone_no_primary || location.state?.phone_no_primary || '',
@@ -25,7 +26,6 @@ const CreateForm = () => {
   const [formSuccess, setFormSuccess] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Get team from URL query parameter or state
