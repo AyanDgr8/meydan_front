@@ -189,19 +189,27 @@ const Header = () => {
                             />   
                         </div> */}
                     <div className="profile-section">
-                        <img 
-                            src="/uploads/MultyLogo.png"
-                            className="pro-icon"
-                            alt="profile icon"
-                            aria-label="Profile"
-                            onClick={handleLogout}
-                        />
-                        <span onClick={handleLogout} style={{ cursor: 'pointer', fontSize: '0.85rem', color: '#666' }}>Logout</span>
-                        {!isLoading && username && (
-                            <span style={{ fontSize: '0.85rem', color: '#666', marginTop: '-2.5px'  }}>
-                                {username}
-                            </span>
-                        )}
+                        <div className="profile-dropdown">
+                            <img 
+                                src="/uploads/MultyLogo.png"
+                                className="pro-icon"
+                                alt="profile icon"
+                                aria-label="Profile"
+                            />
+                            <div className="dropdown-content">
+                                <Link to="/brand">Brand Management</Link>
+                                <Link to="/business">Business Center Management</Link>
+                                <Link to="/receptionist">Receptionist Management</Link>
+                                <Link to="/admin">Companies and Users</Link>
+                                <div className="dropdown-divider"></div>
+                                <div className="dropdown-footer">
+                                    <span onClick={handleLogout} className="logout-btn">Logout</span>
+                                    {!isLoading && username && (
+                                        <span className="username">{username}</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </>
             ) : (

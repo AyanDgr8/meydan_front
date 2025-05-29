@@ -138,8 +138,8 @@
 }
 
 .profile-section .pro-icon {
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     cursor: pointer;
 }
 
@@ -151,10 +151,10 @@
 
 /* Profile icon styling */
 .pro-icon {
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease;
     border-radius: 50%;
     border: 1px solid #ccc;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
@@ -204,4 +204,108 @@
 .notification-icon:hover {
     transform: scale(1.25);
     box-shadow: 0 0 6px rgba(180, 0, 0, 0.8);
+}
+
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-dropdown::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    transform: translateY(-50%) rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.profile-dropdown:hover::after {
+    opacity: 1;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top:90%;
+    right: 0;
+    background-color: white;
+    min-width: 250px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.08);
+    backdrop-filter: blur(10px);
+}
+
+.profile-dropdown:hover .dropdown-content {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.dropdown-content a {
+    color: #333;
+    padding: 10px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.dropdown-content a:hover {
+    background-color: #f8f9fa;
+    color: #EF6F53;
+    padding-left: 24px;
+}
+
+.dropdown-content a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 4px;
+    height: 0;
+    background-color: #EF6F53;
+    transition: height 0.2s ease;
+}
+
+.dropdown-content a:hover::before {
+    height: 100%;
+}
+
+.dropdown-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.dropdown-footer .logout-btn {
+    color: #EF6F53;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s;
+    padding: 5px;
+}
+
+.dropdown-footer .logout-btn:hover {
+    color: #e73710;
+    font-weight: 600;
+}
+
+.dropdown-footer .username {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;  
 }

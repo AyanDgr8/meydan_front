@@ -11,13 +11,29 @@ const ResetPassword = () => {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
-    const { id, token } = useParams();
+    const { token } = useParams();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         
+        // Password validation
         if (newPassword.length < 8) {
             setError('Password must be at least 8 characters long');
+            return;
+        }
+
+        if (!/[A-Z]/.test(newPassword)) {
+            setError('Password must contain at least one uppercase letter');
+            return;
+        }
+
+        if (!/[a-z]/.test(newPassword)) {
+            setError('Password must contain at least one lowercase letter');
+            return;
+        }
+
+        if (!/\d/.test(newPassword)) {
+            setError('Password must contain at least one number');
             return;
         }
 
@@ -32,11 +48,11 @@ const ResetPassword = () => {
 
         try {
             const apiUrl = process.env.REACT_APP_API_URL;
-            const response = await axios.post(`${apiUrl}/reset-password/${id}/${token}`, { 
+            const response = await axios.post(`${apiUrl}/reset-password/${token}`, { 
                 newPassword 
             });
             
-            if (response.data.message === 'Password reset successful') {
+            if (response.data.success) {
                 setMessage('Password reset successful!');
                 
                 // Redirect to login after 2 seconds

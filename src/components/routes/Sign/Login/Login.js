@@ -96,7 +96,7 @@ const Login = () => {
         try {
             // Clear any existing tokens and sessions first
             localStorage.removeItem('token');
-            localStorage.removeItem('admin');
+            localStorage.removeItem('user');
             
             const apiUrl = process.env.REACT_APP_API_URL;
             const deviceId = getDeviceId();
@@ -112,27 +112,31 @@ const Login = () => {
                 const { token } = response.data.data;
                 const tokenData = jwtDecode(token);
 
-                // Verify this is an admin token
-                if (!tokenData.isAdmin) {
-                    throw new Error('Not authorized as admin');
-                }
-
-                // Store admin data
-                const adminData = {
-                    id: tokenData.id,
+                // Store user data
+                const userData = {
+                    id: tokenData.userId,
                     username: tokenData.username,
                     email: tokenData.email,
-                    isAdmin: true,
+                    role: tokenData.role,
+                    isAdmin: tokenData.isAdmin,
                     deviceId,
-                    sessionId: tokenData.sessionId
+                    sessionId: tokenData.sessionId,
+                    brand_id: tokenData.brand_id,
+                    business_center_id: tokenData.business_center_id
                 };
 
-                // Store token and admin data
+                // Store token and user data
                 localStorage.setItem('token', token);
-                localStorage.setItem('admin', JSON.stringify(adminData));
+                localStorage.setItem('user', JSON.stringify(userData));
 
-                // Reload the page instead of using navigate
-                window.location.reload();
+                // Redirect based on user role
+                if (userData.isAdmin) {
+                    navigate('/brand', { replace: true });
+                } else if (userData.role === 'brand_user') {
+                    navigate('/business', { replace: true });
+                } else if (userData.role === 'receptionist') {
+                    navigate('/receptionist', { replace: true });
+                } 
             } else {
                 throw new Error('Invalid response from server');
             }
@@ -153,8 +157,6 @@ const Login = () => {
                 setError(`Too many failed attempts. Try again in ${remainingTime} seconds`);
             } else if (error.response?.status === 401) {
                 setError('Invalid email or password');
-            } else if (error.message === 'Not authorized as admin') {
-                setError('This account does not have admin privileges');
             } else {
                 setError(error.response?.data?.message || "Login failed. Please try again.");
             }
@@ -172,25 +174,32 @@ const Login = () => {
 
         // Check for existing session
         const token = localStorage.getItem('token');
-        const admin = localStorage.getItem('admin');
+        const user = localStorage.getItem('user');
         
-        if (token && admin) {
+        if (token && user) {
             try {
                 const tokenData = jwtDecode(token);
                 const currentTime = Date.now() / 1000;
                 
-                // If token is still valid, redirect to admin dashboard
+                // If token is still valid, redirect to appropriate dashboard
                 if (tokenData.exp > currentTime) {
-                    navigate('/admin', { replace: true });
+                    const userData = JSON.parse(user);
+                    if (userData.isAdmin) {
+                        navigate('/brand', { replace: true });
+                    } else if (userData.role === 'brand_user') {
+                        navigate('/business', { replace: true });
+                    } else if (userData.role === 'receptionist') {
+                        navigate('/receptionist', { replace: true });
+                    } 
                 } else {
                     // Clear expired session
                     localStorage.removeItem('token');
-                    localStorage.removeItem('admin');
+                    localStorage.removeItem('user');
                 }
             } catch (error) {
                 // Clear invalid session
                 localStorage.removeItem('token');
-                localStorage.removeItem('admin');
+                localStorage.removeItem('user');
             }
         }
     }, [navigate]);

@@ -18,7 +18,10 @@ import DownloadFile from "../Other/Header/Download/DownloadFile";
 import ApproveUser from "../Sign/ApproveUser/ApproveUser";
 import AdminPortal from "./AdminPortal/AdminPortal";
 import TeamForm from "./TeamForm/TeamForm";
-import Business from "./AdminPortal/Business";
+import Business from "./AdminPortal/Business/Business";
+import Brand from "./AdminPortal/Brand/Brand";
+import Receptionist from "./AdminPortal/Receptionist/Receptionist";
+import Center from "./AdminPortal/Business/Center";
 
 const ZForm = () => {
     return (
@@ -27,7 +30,13 @@ const ZForm = () => {
             {/* Admin Portal - Protected by AdminGuard */}
             <Route path="/admin" element={<AdminPortal />} />
             
+            {/* Business Center Management Routes */}
             <Route path="/business" element={<Business />} />
+            <Route path="/business/center/:businessId" element={<Center />} />
+            
+            <Route path="/brand" element={<Brand />} />
+
+            <Route path="/receptionist" element={<Receptionist />} />
 
             {/* Search for a customer */}
             <Route path="/customers/search" element={<SearchForm />} />
@@ -56,6 +65,7 @@ const ZForm = () => {
             {/* Use customer form by phone number */}
             <Route path="/customers/phone/:phone_no/updates/" element={<LastChangeWrapper />} />
 
+
             {/* Upload and Download routes - Protected */}
             <Route path="/upload" element={<UploadNew />} />
             <Route path="/download" element={<DownloadFile />} />
@@ -77,7 +87,7 @@ const ZForm = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Reset password route - updated to include both id and token */}
-            <Route path="/reset-password/:id/:token" element={<ResetPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
 
             {/* Approve user route */}
             <Route path="/approve-user/:token" element={<ApproveUser />} />

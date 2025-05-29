@@ -208,52 +208,10 @@ const AdminPortal = () => {
     return (
         <div className="admin-portal-container">
             <div className="admin-portal">
-                <div className="section">
-                    <h3 className='existing-user-heading'>Users</h3>
-                    <div className="users-list">
-                        {/* Group users by team */}
-                        {teams.map(team => {
-                            // Filter users for this team
-                            const teamUsers = users.filter(user => 
-                                user.team_id === team.id
-                            );
 
-                            // Only show team section if there are users
-                            if (teamUsers.length === 0) return null;
 
-                            return (
-                                <div 
-                                    key={team.id} 
-                                    className="team-section"
-                                    onClick={() => handleTeamClick(team.team_name)}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <h4 className="team-name">{team.team_name}</h4>
-                                    <div className="user-row header">
-                                        <div className="user-col">Name</div>
-                                        <div className="user-col">Email</div>
-                                        <div className="user-col">Mobile Number</div>
-                                        <div className="user-col">Alter Number</div>
-                                        <div className="user-col">Designation</div>
-                                    </div>
-                                    {teamUsers.map(user => (
-                                        <div className="user-row" key={user.id}>
-                                            <div className="user-col">{user.username}</div>
-                                            <div className="user-col">{user.email}</div>
-                                            <div className="user-col">{user.mobile_num}</div>
-                                            <div className="user-col">{user.mobile_num_2}</div>
-                                            <div className="user-col">{user.designation}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            );
-                        })}
-
-                    </div>
-                </div>
-
-                <div className="sectionnn">
-                    <h3 className='create-user-heading'>Create User</h3>
+            <div className="sectionnn">
+                    <h3 className='create-user-heading'>Create Associate</h3>
                     <div className="user-formm">
                         <div className="user-inputs">
                         
@@ -305,7 +263,7 @@ const AdminPortal = () => {
                             {fieldErrors.team_id && <div className="error-messaage">{fieldErrors.team_id}</div>}
                         </div>
 
-                        <button onClick={handleCreateUser} className="create-button">Create User</button>
+                        <button onClick={handleCreateUser} className="create-button">Create Associate</button>
                     </div>
 
                 </div>
@@ -400,6 +358,50 @@ const AdminPortal = () => {
                     
                     <div className="team-button-container">
                         <button onClick={handleCreateTeams} className="create-button">Create Team</button>
+                    </div>
+                </div>
+                
+                <div className="section">
+                    <h3 className='existing-user-heading'>Associates</h3>
+                    <div className="users-list">
+                        {/* Group users by team */}
+                        {teams.map(team => {
+                            // Filter users for this team
+                            const teamUsers = users.filter(user => 
+                                user.team_id === team.id
+                            );
+
+                            // Only show team section if there are users
+                            if (teamUsers.length === 0) return null;
+
+                            return (
+                                <div 
+                                    key={team.id} 
+                                    className="team-section"
+                                    onClick={() => handleTeamClick(team.team_name)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <h4 className="team-name">{team.team_name}</h4>
+                                    <div className="user-row header">
+                                        <div className="user-col">Name</div>
+                                        <div className="user-col">Email</div>
+                                        <div className="user-col">Mobile Number</div>
+                                        <div className="user-col">Alter Number</div>
+                                        <div className="user-col">Designation</div>
+                                    </div>
+                                    {teamUsers.map(user => (
+                                        <div className="user-row" key={user.id}>
+                                            <div className="user-col">{user.username}</div>
+                                            <div className="user-col">{user.email}</div>
+                                            <div className="user-col">{user.mobile_num}</div>
+                                            <div className="user-col">{user.mobile_num_2}</div>
+                                            <div className="user-col">{user.designation}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })}
+
                     </div>
                 </div>
             </div>
