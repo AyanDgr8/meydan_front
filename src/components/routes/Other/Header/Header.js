@@ -140,7 +140,7 @@ const Header = () => {
                             type="text"
                             className="form-control form-cont"
                             aria-label="Team search input"
-                            placeholder="Search Company"
+                            placeholder="Search records"
                             value={queueSearchQuery}
                             onChange={(e) => setQueueSearchQuery(e.target.value)}
                             onKeyDown={handleQueueKeyDown}

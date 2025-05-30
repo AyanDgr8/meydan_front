@@ -409,8 +409,14 @@ const Business = () => {
                                 <p><strong>Country:</strong> {business.business_country}</p>
                             </div>
                             <div className="business-actions" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => handleEdit(business)}>Edit</button>
-                                <button onClick={() => handleDelete(business.id)}>Delete</button>
+                                <button onClick={() => handleEdit(business)}>EDIT</button>
+                                <button onClick={() => handleDelete(business.id)}>DELETE</button>
+                                <button 
+                                    className="receptionist-button"
+                                    onClick={() => navigate(`/business/receptionist`)}
+                                >
+                                    RECEPTIONIST
+                                </button>
                             </div>
                         </div>
                     ))}

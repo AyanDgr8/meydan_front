@@ -12,6 +12,15 @@ const TeamForm = () => {
     const [teamMembers, setTeamMembers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [editingMember, setEditingMember] = useState(null);
+    const [memberFormData, setMemberFormData] = useState({
+        username: '',
+        designation: '',
+        email: '',
+        mobile_num: '',
+        mobile_num_2: ''
+    });
+    const [success, setSuccess] = useState('');
 
     const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -132,6 +141,129 @@ const TeamForm = () => {
         navigate(`/customers/create?team=${encodeURIComponent(teamDetails.team_name)}`);
     };
 
+    const handleMemberEdit = (member) => {
+        setEditingMember(member);
+        setMemberFormData({
+            username: member.username,
+            designation: member.designation,
+            email: member.email,
+            mobile_num: member.mobile_num,
+            mobile_num_2: member.mobile_num_2 || ''
+        });
+    };
+
+    const handleMemberUpdate = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccess('');
+
+        // Basic validation
+        if (!memberFormData.username || !memberFormData.email || !memberFormData.mobile_num) {
+            setError('Please fill in all required fields');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+
+            const response = await axios.put(
+                `${apiUrl}/team/member/${editingMember.id}`,
+                memberFormData,
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+
+            // Update the team members list
+            setTeamMembers(prevMembers =>
+                prevMembers.map(member =>
+                    member.id === editingMember.id
+                        ? { ...member, ...memberFormData }
+                        : member
+                )
+            );
+
+            setSuccess('Team member updated successfully');
+            resetMemberForm();
+
+            // Clear messages after 3 seconds
+            setTimeout(() => {
+                setSuccess('');
+                setError('');
+            }, 3000);
+
+        } catch (error) {
+            console.error('Error updating team member:', error);
+            setError(error.response?.data?.message || 'Error updating team member');
+            
+            // Clear error after 3 seconds
+            setTimeout(() => {
+                setError('');
+            }, 3000);
+        }
+    };
+
+    const handleMemberDelete = async (memberId) => {
+        if (!window.confirm('Are you sure you want to delete this team member?')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+
+            await axios.delete(`${apiUrl}/team/member/${memberId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // Update the team members list by removing the deleted member
+            setTeamMembers(prevMembers => 
+                prevMembers.filter(member => member.id !== memberId)
+            );
+
+            setSuccess('Team member deleted successfully');
+
+            // Clear success message after 3 seconds
+            setTimeout(() => {
+                setSuccess('');
+            }, 3000);
+
+        } catch (error) {
+            console.error('Error deleting team member:', error);
+            setError(error.response?.data?.message || 'Error deleting team member');
+            
+            // Clear error message after 3 seconds
+            setTimeout(() => {
+                setError('');
+            }, 3000);
+        }
+    };
+
+    const resetMemberForm = () => {
+        setEditingMember(null);
+        setMemberFormData({
+            username: '',
+            designation: '',
+            email: '',
+            mobile_num: '',
+            mobile_num_2: ''
+        });
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setMemberFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
     if (isLoading) {
         return <div className="loading">Loading...</div>;
@@ -154,7 +286,7 @@ const TeamForm = () => {
                 </button>
             </div>
             <div>
-                <p className="team-prompt"><strong>PROMPT:</strong> <i>{teamDetails.team_prompt || 'No team prompt available'}</i></p>
+                <p className="team-prompt"><strong>PROMPT:</strong> {teamDetails.team_prompt || 'No team prompt available'}</p>
             </div>
 
             <div className="team-info">
@@ -194,6 +326,104 @@ const TeamForm = () => {
 
             <div className="team-members">
                 <h2>Company Members ({teamMembers.length})</h2>
+
+                {/* Success and Error Messages */}
+                {success && <div className="success-message">{success}</div>}
+                {error && <div className="error-message">{error}</div>}
+
+
+            {/* Edit Member Form */}
+            {editingMember && (
+                <div className="sectionnnnn">
+                    <h3 className='create-team-heading'>Edit Associate</h3>
+                    <div className='team-inputsss'>
+                        <div className="team-inputtt">
+                            <div className="form-rowww">
+                                <div className="form-groupppp">
+                                    <label htmlFor="username">Username:</label>
+                                    <div className="input-container">
+                                        <input
+                                            type="text"
+                                            id="username"
+                                            name="username"
+                                            value={memberFormData.username}
+                                            onChange={handleInputChange}
+                                            placeholder="Username"
+                                            className={error ? 'error' : ''}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-groupppp">
+                                    <label htmlFor="email">Email:</label>
+                                    <div className="input-container">
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            name="email"
+                                            value={memberFormData.email}
+                                            onChange={handleInputChange}
+                                            placeholder="Email"
+                                            className={error ? 'error' : ''}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-groupppp">
+                                    <label htmlFor="mobile_num">Mobile Number:</label>
+                                    <div className="input-container">
+                                        <input
+                                            type="text"
+                                            id="mobile_num"
+                                            name="mobile_num"
+                                            value={memberFormData.mobile_num}
+                                            onChange={handleInputChange}
+                                            placeholder="Mobile Number"
+                                            className={error ? 'error' : ''}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="form-rowww">
+                                <div className="form-groupppp">
+                                    <label htmlFor="mobile_num_2">Alternative Mobile:</label>
+                                    <div className="input-container">
+                                        <input
+                                            type="text"
+                                            id="mobile_num_2"
+                                            name="mobile_num_2"
+                                            value={memberFormData.mobile_num_2}
+                                            onChange={handleInputChange}
+                                            placeholder="Alternative Mobile Number"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-groupppp">
+                                    <label htmlFor="designation">Designation:</label>
+                                    <div className="input-container">
+                                        <input
+                                            type="text"
+                                            id="designation"
+                                            name="designation"
+                                            value={memberFormData.designation}
+                                            onChange={handleInputChange}
+                                            placeholder="Designation"
+                                            className={error ? 'error' : ''}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="button-containerrrr">
+                        <button onClick={handleMemberUpdate} className="create-buttonn">Update Associate</button>
+                        <button onClick={resetMemberForm} className="cancel-buttonn">Cancel</button>
+                    </div>
+                </div>
+            )}
+                {/* Members Grid */}
                 <div className="members-grid">
                     {teamMembers.map((member) => (
                         <div key={member.id} className="member-card">
@@ -202,9 +432,10 @@ const TeamForm = () => {
                                 <p><strong>Role:</strong> {member.designation}</p>
                                 <p><strong>Email:</strong> {member.email}</p>
                                 <p><strong>Phone:</strong> <a href={`tel:${member.mobile_num}`}>{member.mobile_num}</a></p>
-                                {member.mobile_num_2 && (
-                                    <p><strong>Alt Phone:</strong> <a href={`tel:${member.mobile_num_2}`}>{member.mobile_num_2}</a></p>
-                                )}
+                            </div>
+                            <div className="member-actions">
+                                <button onClick={() => handleMemberEdit(member)}>Edit</button>
+                                <button onClick={() => handleMemberDelete(member.id)}>Delete</button>
                             </div>
                         </div>
                     ))}

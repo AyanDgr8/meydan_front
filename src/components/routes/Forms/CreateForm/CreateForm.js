@@ -231,7 +231,7 @@ const CreateForm = () => {
 
           setFormSuccess(true);
           setTimeout(() => {
-            navigate(`/team/${formData.QUEUE_NAME}`);
+            navigate(`/customers/search?team=${formData.QUEUE_NAME}`);
           }, 2000);
 
         } catch (notificationError) {
@@ -239,7 +239,7 @@ const CreateForm = () => {
           setFormSuccess(true);
           setError('Record created successfully, but notifications could not be sent');
           setTimeout(() => {
-            navigate(`/team/${formData.QUEUE_NAME}`);
+            navigate(`/customers/search?team=${formData.QUEUE_NAME}`);
           }, 2000);
         }
       }

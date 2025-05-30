@@ -269,9 +269,9 @@ const AdminPortal = () => {
                         <button onClick={handleCreateUser} className="create-button">Create Associate</button>
                     </div>
 
-                </div>
+                </div> */}
 
-                <div className="sectionnn">
+                {/* <div className="sectionnn">
                     <h3 className='create-team-heading'>Create Company</h3>
                     <div className='team-inputsss'>
                         {newTeams.map((team, index) => (

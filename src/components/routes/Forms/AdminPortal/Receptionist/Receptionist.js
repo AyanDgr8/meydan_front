@@ -7,23 +7,47 @@ import './Receptionist.css';
 
 const Receptionist = () => {
     const [receptionists, setReceptionists] = useState([]);
+    const [businessCenters, setBusinessCenters] = useState([]);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingReceptionist, setEditingReceptionist] = useState(null);
+    const [brandLimits, setBrandLimits] = useState(null);
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
         receptionist_name: '',
         receptionist_phone: '',
         receptionist_email: '',
+        business_center_id: '',
         rec_other_detail: ''
     });
 
     useEffect(() => {
         fetchReceptionists();
+        fetchBusinessCenters();
+        fetchBrandLimits();
     }, []);
+
+    const fetchBusinessCenters = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/admin');
+                return;
+            }
+
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/business`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            setBusinessCenters(response.data);
+        } catch (error) {
+            console.error('Error fetching business centers:', error);
+            setError('Error fetching business centers');
+        }
+    };
 
     const fetchReceptionists = async () => {
         try {
@@ -43,6 +67,24 @@ const Receptionist = () => {
             console.error('Error fetching receptionists:', error);
             setError('Error fetching receptionists');
             setIsLoading(false);
+        }
+    };
+
+    const fetchBrandLimits = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/admin');
+                return;
+            }
+
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/brand/limits`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            setBrandLimits(response.data);
+        } catch (error) {
+            console.error('Error fetching brand limits:', error);
         }
     };
 
@@ -80,13 +122,12 @@ const Receptionist = () => {
             setSuccess(
                 editingReceptionist
                 ? 'Receptionist updated successfully!'
-                : `${response.data.message}. Check email for login details.`
+                : 'Receptionist created successfully!'
             );
             
             fetchReceptionists();
             resetForm();
             
-            // Auto-clear messages after 3 seconds
             setTimeout(() => {
                 setError('');
                 setSuccess('');
@@ -96,7 +137,6 @@ const Receptionist = () => {
             console.error('Error submitting receptionist:', error);
             setError(error.response?.data?.message || 'An error occurred');
             
-            // Auto-clear error message after 3 seconds
             setTimeout(() => {
                 setError('');
             }, 3000);
@@ -109,7 +149,8 @@ const Receptionist = () => {
             receptionist_name: receptionist.receptionist_name,
             receptionist_phone: receptionist.receptionist_phone,
             receptionist_email: receptionist.receptionist_email,
-            rec_other_detail: receptionist.rec_other_detail
+            business_center_id: receptionist.business_center_id,
+            rec_other_detail: receptionist.rec_other_detail || ''
         });
         setShowForm(true);
     };
@@ -122,7 +163,7 @@ const Receptionist = () => {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                navigate('/admin');
+                setError('Not authenticated');
                 return;
             }
 
@@ -130,12 +171,32 @@ const Receptionist = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            setSuccess('Receptionist deleted successfully');
+            setSuccess('Receptionist deleted successfully!');
             fetchReceptionists();
+
+            setTimeout(() => {
+                setSuccess('');
+            }, 3000);
+
         } catch (error) {
             console.error('Error deleting receptionist:', error);
             setError('Error deleting receptionist');
+
+            setTimeout(() => {
+                setError('');
+            }, 3000);
         }
+    };
+
+    const handleAddNewClick = () => {
+        if (receptionists.length >= brandLimits?.receptionist) {
+            setError(`You have reached the maximum limit of ${brandLimits.receptionist} receptionists`);
+            setTimeout(() => {
+                setError('');
+            }, 3000);
+            return;
+        }
+        setShowForm(true);
     };
 
     const resetForm = () => {
@@ -143,15 +204,12 @@ const Receptionist = () => {
             receptionist_name: '',
             receptionist_phone: '',
             receptionist_email: '',
+            business_center_id: '',
             rec_other_detail: ''
         });
         setEditingReceptionist(null);
         setShowForm(false);
     };
-
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
 
     return (
         <div className="receptionist-container">
@@ -161,20 +219,17 @@ const Receptionist = () => {
             {success && <div className="success-message">{success}</div>}
 
             <button 
-                className="add-receptionist-btn"
-                onClick={() => setShowForm(!showForm)}
+                className="add-receptionist-btn" 
+                onClick={handleAddNewClick}
             >
-                {showForm ? 'Cancel' : 'Add New Receptionist'}
+                Add New Receptionist
             </button>
 
             {showForm && (
                 <form onSubmit={handleSubmit} className="receptionist-form">
-                    <h3>{editingReceptionist ? 'Edit Receptionist' : 'Add New Receptionist'}</h3>
-                    
-                    {/* Brand Name Row */}
                     <div className="form-rowww">
                         <div className="form-groupppp">
-                            <label htmlFor="receptionist_name">Receptionist Name:</label>
+                            <label htmlFor="receptionist_name">Name:</label>
                             <div className="input-container">
                                 <input
                                     type="text"
@@ -186,9 +241,28 @@ const Receptionist = () => {
                                 />
                             </div>
                         </div>
+
+                        <div className="form-groupppp">
+                            <label htmlFor="business_center_id">Business Center:</label>
+                            <div className="input-container">
+                                <select
+                                    id="business_center_id"
+                                    name="business_center_id"
+                                    value={formData.business_center_id}
+                                    onChange={handleInputChange}
+                                    required
+                                >
+                                    <option value="">Select Business Center</option>
+                                    {businessCenters.map(center => (
+                                        <option key={center.id} value={center.id}>
+                                            {center.business_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Email and Phone Row */}
                     <div className="form-rowww">
                         <div className="form-groupppp">
                             <label htmlFor="receptionist_email">Email:</label>
@@ -199,6 +273,7 @@ const Receptionist = () => {
                                     name="receptionist_email"
                                     value={formData.receptionist_email}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
                         </div>
@@ -216,7 +291,6 @@ const Receptionist = () => {
                         </div>
                     </div>
 
-                    {/* Other Details Row */}
                     <div className="form-rowww">
                         <div className="form-groupppp full-width">
                             <label htmlFor="rec_other_detail">Other Details:</label>
@@ -244,31 +318,35 @@ const Receptionist = () => {
             <div className="receptionists-list">
                 <h3 className="receptionist-list-title">Receptionist List</h3>
                 <div className="receptionist-cards-container">
-                {receptionists.map(receptionist => (
-                    <div key={receptionist.id} className="receptionist-card">
-                        <div className="receptionist-info">
-                            <div className="receptionist-row receptionist-name-row">
-                                <h3>{receptionist.receptionist_name}</h3>
-                            </div>
-                            
-                            <div className="receptionist-row contact-row">
-                                <p><strong>Email:</strong> {receptionist.receptionist_email}</p>
-                                <p><strong>Phone:</strong> {receptionist.receptionist_phone}</p>
-                            </div>
-                            
-                            {receptionist.rec_other_detail && (
-                                <div className="receptionist-row other-row">
-                                    <p><strong>Other Details:</strong> {receptionist.rec_other_detail}</p>
+                    {receptionists.map(receptionist => (
+                        <div key={receptionist.id} className="receptionist-card">
+                            <div className="receptionist-info">
+                                <div className="receptionist-row receptionist-name-row">
+                                    <h3>{receptionist.receptionist_name}</h3>
                                 </div>
-                            )}
+                                
+                                <div className="receptionist-row business-row">
+                                    <p><strong>Business Center:</strong> {receptionist.business_name}</p>
+                                </div>
+                                
+                                <div className="receptionist-row contact-row">
+                                    <p><strong>Email:</strong> {receptionist.receptionist_email}</p>
+                                    <p><strong>Phone:</strong> {receptionist.receptionist_phone}</p>
+                                </div>
+                                
+                                {receptionist.rec_other_detail && (
+                                    <div className="receptionist-row other-row">
+                                        <p><strong>Other Details:</strong> {receptionist.rec_other_detail}</p>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className="receptionist-actions">
+                                <button onClick={() => handleEdit(receptionist)}>Edit</button>
+                                <button onClick={() => handleDelete(receptionist.id)}>Delete</button>
+                            </div>
                         </div>
-                        
-                        <div className="receptionist-actions">
-                            <button onClick={() => handleEdit(receptionist)}>Edit</button>
-                            <button onClick={() => handleDelete(receptionist.id)}>Delete</button>
-                        </div>
-                    </div>
-                ))}
+                    ))}
                 </div>
             </div>
         </div>

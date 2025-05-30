@@ -285,16 +285,6 @@
     font-weight: 500;
 }
 
-.permission-item {
-    display: inline-block;
-    margin: 0.25rem;
-    padding: 0.25rem 0.5rem;
-    background-color: #e3f2fd;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    color: #2196f3;
-}
-
 .message-container {
     position: fixed;
     top: 20px;
