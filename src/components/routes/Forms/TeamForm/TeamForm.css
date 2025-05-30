@@ -13,28 +13,18 @@
     width: 100%;
 }
 
-.team-namee {
-    font-size: 3rem;
-    color: #EF6F53;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.05rem;
-    text-align: center;
-}
 
 .team-prompt {
     color: white;
     margin: 0;
     font-size: 2rem;
-    /* text-align: left; */
     font-weight: bold;
     background-color: #EF6F53;
-    padding: 0.25rem;
 }
 
 .view-records-btn {
     margin-left: auto;
-    padding: 0.25rem 0.5rem;
+    padding: 0.2rem 0.8rem;
     font-size: 0.9rem;
     background-color: #364C63;
     color: white;

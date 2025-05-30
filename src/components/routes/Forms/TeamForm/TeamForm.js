@@ -147,7 +147,7 @@ const TeamForm = () => {
 
     return (
         <div className="team-form-container">
-            <div className="team-title">
+            <div className="team-titlee">
                 <h1 className="team-name">{teamDetails.team_name}</h1>
                 <button className="view-records-btn" onClick={handleViewRecords}>
                     View Records

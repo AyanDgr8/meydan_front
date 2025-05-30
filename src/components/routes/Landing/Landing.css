@@ -23,8 +23,10 @@
 }
 
 .landing-heading {
-    margin-top: 15%;
-    font-size: 5rem;
+    width:75%;
+    margin: auto;
+    margin-top: 12.5%;
+    font-size: 4.5rem;
     color: white;
     font-weight: 600;
 }
