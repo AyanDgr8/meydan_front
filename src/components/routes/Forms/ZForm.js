@@ -1,7 +1,7 @@
 // src/components/routes/Forms/ZForm.js
 
 import React from "react";
-import { Routes, Route, useParams } from 'react-router-dom';
+import { Routes, Route, useParams } from "react-router-dom";
 import SearchForm from "./SearchForm/SearchForm";
 import UseForm from "./UseForm/UseForm";
 // import ListForm from "./ListForm/ListForm";
@@ -22,94 +22,97 @@ import Business from "./AdminPortal/Business/Business";
 import Brand from "./AdminPortal/Brand/Brand";
 import Receptionist from "./AdminPortal/Receptionist/Receptionist";
 import Center from "./AdminPortal/Business/Center";
+import DashboardNew from "../Other/Dashboard/Dashboard-new";
 
 const ZForm = () => {
-    return (
-        <Routes>
+  return (
+    <Routes>
+      {/* Admin Portal - Protected by AdminGuard */}
+      <Route path="/admin" element={<AdminPortal />} />
 
-            {/* Admin Portal - Protected by AdminGuard */}
-            <Route path="/admin" element={<AdminPortal />} />
-            
-            {/* Business Center Management Routes */}
-            <Route path="/business" element={<Business />} />
-            <Route path="/business/center" element={<Center />} />
-            <Route path="/business/receptionist" element={<Receptionist />} />
-            <Route path="/business/center/:businessId" element={<Center />} />
-            <Route path="/business/:businessId/teams" element={<Center />} />
-            <Route path="/business/:businessId/team/:teamName" element={<TeamForm />} />
-            
-            {/* Alternative business center route */}
-            <Route path="/business/:teamName" element={<TeamForm />} />
-            
-            <Route path="/brand" element={<Brand />} />
+      {/* Business Center Management Routes */}
+      <Route path="/business" element={<Business />} />
+      <Route path="/business/center" element={<Center />} />
+      <Route path="/business/receptionist" element={<Receptionist />} />
+      <Route path="/business/center/:businessId" element={<Center />} />
+      <Route path="/business/:businessId/teams" element={<Center />} />
+      <Route
+        path="/business/:businessId/team/:teamName"
+        element={<TeamForm />}
+      />
 
-            <Route path="/receptionist" element={<Receptionist />} />
+      {/* Alternative business center route */}
+      <Route path="/business/:teamName" element={<TeamForm />} />
 
-            {/* Search for a customer */}
-            <Route path="/customers/search" element={<SearchForm />} />
+      <Route path="/brand" element={<Brand />} />
 
-            {/* List all customers */}
-            <Route path="/team/:teamName" element={<TeamForm />} />
+      <Route path="/receptionist" element={<Receptionist />} />
 
-            {/* View/Edit customer by team and phone */}
-            <Route path="/team/:teamName/:phone_no" element={<UseForm />} />
+      {/* Search for a customer */}
+      <Route path="/customers/search" element={<SearchForm />} />
 
-            {/* Create a new customer record */}
-            <Route path="/customers/create" element={<CreateForm />} />
+      {/* List all customers */}
+      <Route path="/team/:teamName" element={<TeamForm />} />
 
-            {/* Use customer form by phone number - legacy route */}
-            <Route path="/customers/phone/:phone_no" element={<UseForm />} />
+      {/* View/Edit customer by team and phone */}
+      <Route path="/team/:teamName/:phone_no" element={<UseForm />} />
 
-            {/* Use customer form by ID */}
-            <Route path="/customers/:id" element={<UseForm />} />
+      {/* Create a new customer record */}
+      <Route path="/customers/create" element={<CreateForm />} />
 
-            {/* Create a new customer record - legacy routes */}
-            <Route path="/customers/create/:phone_no" element={<CreateForm />} />
+      {/* Use customer form by phone number - legacy route */}
+      <Route path="/customers/phone/:phone_no" element={<UseForm />} />
 
-            {/* Log customer changes, passing customerId as a prop */}
-            <Route path="/customers/log-change/:id" element={<LastChangeWrapper />} />
-            
-            {/* Use customer form by phone number */}
-            <Route path="/customers/phone/:phone_no/updates/" element={<LastChangeWrapper />} />
+      {/* Use customer form by ID */}
+      <Route path="/customers/:id" element={<UseForm />} />
 
+      {/* Create a new customer record - legacy routes */}
+      <Route path="/customers/create/:phone_no" element={<CreateForm />} />
 
-            {/* Upload and Download routes - Protected */}
-            <Route path="/upload" element={<UploadNew />} />
-            <Route path="/download" element={<DownloadFile />} />
+      {/* Log customer changes, passing customerId as a prop */}
+      <Route path="/customers/log-change/:id" element={<LastChangeWrapper />} />
 
-            {/* Access call reminders */}
-            <Route path="/customers/reminders" element={<Reminder />} />
-            
+      {/* Use customer form by phone number */}
+      <Route
+        path="/customers/phone/:phone_no/updates/"
+        element={<LastChangeWrapper />}
+      />
 
-            {/* Register a new user */}
-            <Route path="/register" element={<Register />} />
+      {/* Upload and Download routes - Protected */}
+      <Route path="/upload" element={<UploadNew />} />
+      <Route path="/download" element={<DownloadFile />} />
 
-            {/* Login route */}
-            <Route path="/login" element={<Login />} />
+      {/* Access call reminders */}
+      <Route path="/customers/reminders" element={<Reminder />} />
 
-            {/* Logout route */}
-            <Route path="/logout" element={<Logout />} />
+      {/* Register a new user */}
+      <Route path="/register" element={<Register />} />
 
-            {/* Forgot password route */}
-            <Route path="/forgot-password" element={<ForgotPassword />} />
+      {/* Login route */}
+      <Route path="/login" element={<Login />} />
 
-            {/* Reset password route - updated to include both id and token */}
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
+      {/* Logout route */}
+      <Route path="/logout" element={<Logout />} />
 
-            {/* Approve user route */}
-            <Route path="/approve-user/:token" element={<ApproveUser />} />
-            {/* ********************************* */}
-        </Routes>
-    );
+      {/* Forgot password route */}
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+
+      {/* Reset password route - updated to include both id and token */}
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/dashboard-new" element={<DashboardNew />} />
+
+      {/* Approve user route */}
+      <Route path="/approve-user/:token" element={<ApproveUser />} />
+      {/* ********************************* */}
+    </Routes>
+  );
 };
 
 // Wrapper component to extract the customerId from the URL and pass it to LastChanges
 const LastChangeWrapper = () => {
-    const { id } = useParams();
-    console.log("Customer ID from URL:", id); 
-    return <LastChanges customerId={id} />;
+  const { id } = useParams();
+  console.log("Customer ID from URL:", id);
+  return <LastChanges customerId={id} />;
 };
-
-
 
 export default ZForm;
