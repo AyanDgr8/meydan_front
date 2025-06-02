@@ -205,7 +205,7 @@ const Business = () => {
                     <div className="form-sections">
                         <div className="form-rowww">
                             <div className="form-groupppp">
-                                <label htmlFor="business_name">Business Name:</label>
+                                <label htmlFor="business_name">Center Name:</label>
                                 <div className="input-container">
                                     <input
                                         type="text"

@@ -137,20 +137,28 @@ const Login = () => {
                 }
 
                 // Navigate and reload based on role
+                
                 let targetPath = '/brand'; // default path
-                if (userData.role === 'brand_admin') {
+                if (userData.role === 'admin') {
+                    window.location.reload();
                     targetPath = '/brand';
                 } else if (userData.role === 'brand_user') {
+                    window.location.reload();
                     targetPath = '/business';
-                } else if (userData.role === 'receptionist') {
-                    targetPath = '/receptionist';
+                } else if (userData.role === 'receptionist' && userData.business_center_id) {
+                    // Redirect receptionist to their specific business center
+                    window.location.reload();
+                    targetPath = `/business/center/${userData.business_center_id}`;
                 }
 
-                // First navigate, then reload after a short delay to ensure storage is set
-                navigate(targetPath, { replace: true });
-                setTimeout(() => {
-                    window.location.href = targetPath; // Use href instead of reload to ensure we're on the right page
-                }, 100);
+                // For receptionist, do a full page redirect to their business center
+                if (userData.role === 'receptionist' && userData.business_center_id) {
+                    window.location.reload();
+                    window.location.href = targetPath;
+                } else {
+                    // For other roles, use normal navigation
+                    navigate(targetPath, { replace: true });
+                }
             } else {
                 throw new Error('Invalid response from server');
             }

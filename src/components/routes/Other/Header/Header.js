@@ -149,14 +149,12 @@ const Header = () => {
     return (
         <div className="header-container">
             {isLoggedIn ? (
-                <Link to="/admin" className="logo-link">
                         <img 
                             src="/uploads/logo.webp"
                             className="logo"
                             alt="Company Logo"
                         aria-label="Logo"
                         />
-                    </Link>
             ) : (
                 <img 
                     src="/uploads/logo.webp"
@@ -246,18 +244,20 @@ const Header = () => {
                                         <Link to="/brand">Brand Management</Link>
                                         <Link to="/business">Business Center Management</Link>
                                         <Link to="/receptionist">Receptionist Management</Link>
-                                        <Link to="/admin">Companies and Users</Link>
+                                        {/* <Link to="/admin">Companies and Users</Link> */}
                                     </>
                                 )}
                                 
-                                {/* Non-admin menu */}
-                                {userRole !== 'admin' && (
+                                {/* Brand user menu */}
+                                {userRole === 'brand_user' && (
                                     <>
                                         <Link to="/business">Business Center Management</Link>
                                         <Link to="/receptionist">Receptionist Management</Link>
-                                        <Link to="/admin">Companies and Users</Link>
+                                        {/* <Link to="/admin">Companies and Users</Link> */}
                                     </>
                                 )}
+
+
                                 <div className="dropdown-divider"></div>
                                 <div className="dropdown-footer" onClick={handleLogout}>
                                     <span  className="logout-btn">Logout</span>

@@ -43,6 +43,7 @@ const ZForm = () => {
             
             <Route path="/brand" element={<Brand />} />
 
+            {/* Receptionist Routes */}
             <Route path="/receptionist" element={<Receptionist />} />
 
             {/* Search for a customer */}

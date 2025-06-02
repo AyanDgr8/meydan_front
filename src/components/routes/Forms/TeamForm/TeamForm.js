@@ -41,42 +41,31 @@ const TeamForm = () => {
                 let userData = JSON.parse(localStorage.getItem('user') || '{}');
                 console.log('User data:', userData);
                 
-                // Check if we're using the business-center URL format
-                const isBusinessCenterUrl = window.location.pathname.startsWith('/business/center');
-                
+                // Determine endpoint based on user role
                 let apiEndpoint;
-                if (isBusinessCenterUrl) {
-                    // For business-center URL, use the new endpoint
-                    apiEndpoint = `${process.env.REACT_APP_API_URL}/business/center/${encodeURIComponent(teamName)}`;
-                    // Only add business_center_id if it exists
-                    const businessCenterId = userData.business_center_id || localStorage.getItem('businessId');
-                    if (businessCenterId && businessCenterId !== 'null') {
-                        apiEndpoint += `?business_center_id=${businessCenterId}`;
+                if (userData.role === 'receptionist') {
+                    // For receptionists, use the business-center endpoint
+                    const businessCenterId = userData.business_center_id || routeBusinessId;
+                    if (!businessCenterId) {
+                        throw new Error('Business center ID not found. Please log in again.');
                     }
-                    console.log('Business center URL format with endpoint:', apiEndpoint);
+                    apiEndpoint = `${process.env.REACT_APP_API_URL}/business-center/${businessCenterId}/teams`;
+                    console.log('Using business-center endpoint:', apiEndpoint);
                 } else {
-                    // For traditional URL, use the business ID endpoint
-                    const businessId = routeBusinessId || localStorage.getItem('businessId') || userData.brand_id || userData.business_center_id;
+                    // For other roles (brand_user, admin), use the business endpoint
+                    const businessId = routeBusinessId || localStorage.getItem('businessId') || userData.brand_id;
                     if (!businessId || businessId === 'null') {
                         throw new Error('Business/Brand ID not found. Please log in again.');
                     }
                     apiEndpoint = `${process.env.REACT_APP_API_URL}/business/${businessId}/teams`;
-                    console.log('Traditional URL format with endpoint:', apiEndpoint);
+                    console.log('Using business endpoint:', apiEndpoint);
                 }
                 
                 console.log('Using API endpoint:', apiEndpoint);
                 const response = await axios.get(apiEndpoint, config);
                 console.log('API Response:', response.data);
 
-                let teamsData;
-                if (isBusinessCenterUrl) {
-                    // For business-center URL, response contains a single team
-                    teamsData = response.data.team ? [response.data.team] : [];
-                } else {
-                    // For traditional URL, response contains an array of teams
-                    teamsData = response.data.teams || [];
-                }
-                
+                let teamsData = response.data.teams || [];
                 if (!Array.isArray(teamsData)) {
                     console.error('Invalid teams data:', teamsData);
                     throw new Error('Invalid response format from server');

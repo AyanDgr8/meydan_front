@@ -229,7 +229,7 @@ const Brand = () => {
 
     return (
         <div className="brand-container">
-            <h2>Brand Management</h2>
+            <h2>License Management</h2>
             
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
@@ -238,17 +238,17 @@ const Brand = () => {
                 className="add-brand-btn"
                 onClick={() => setShowForm(!showForm)}
             >
-                {showForm ? 'Cancel' : 'Add New Brand'}
+                {showForm ? 'Cancel' : 'Add New Business Center Group'}
             </button>
 
             {showForm && (
                 <form onSubmit={handleSubmit} className="brand-form">
-                    <h3>{editingBrand ? 'Edit Brand' : 'Add New Brand'}</h3>
+                    <h3>{editingBrand ? 'Edit Brand' : 'Add New Business Center Group'}</h3>
                     
                     {/* Brand Name Row */}
                     <div className="form-rowww">
                         <div className="form-groupppp">
-                            <label htmlFor="brand_name">Brand Name:</label>
+                            <label htmlFor="brand_name">Business Center Group Name:</label>
                             <div className="input-container">
                                 <input
                                     type="text"
@@ -434,7 +434,7 @@ const Brand = () => {
             )}
 
             <div className="brands-list">
-                <h3 className="brand-list-title">Brand List</h3>
+                <h3 className="brand-list-title">Group List</h3>
                 <div className="brand-cards-container">
                 {brands.map(brand => (
                     <div 

@@ -111,12 +111,17 @@ const Center = () => {
     const fetchTeams = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(
-                `${process.env.REACT_APP_API_URL}/business/${businessId}/teams`,
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            );
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            const role = tokenData.role;
+            
+            // Use different endpoints based on role
+            const endpoint = role === 'receptionist' 
+                ? `${process.env.REACT_APP_API_URL}/business-center/${businessId}/teams`
+                : `${process.env.REACT_APP_API_URL}/business/${businessId}/teams`;
+                
+            const response = await axios.get(endpoint, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             
             setTeams(response.data.teams);
             
@@ -133,12 +138,17 @@ const Center = () => {
     const fetchAssociates = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(
-                `${process.env.REACT_APP_API_URL}/business/${businessId}/teams`,
-                {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
-            );
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            const role = tokenData.role;
+            
+            // Use different endpoints based on role
+            const endpoint = role === 'receptionist'
+                ? `${process.env.REACT_APP_API_URL}/business-center/${businessId}/teams`
+                : `${process.env.REACT_APP_API_URL}/business/${businessId}/teams`;
+                
+            const response = await axios.get(endpoint, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             // Extract associates from teams data
             const allAssociates = response.data.teams.reduce((acc, team) => {
                 if (team.associates) {
