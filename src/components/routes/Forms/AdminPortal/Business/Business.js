@@ -403,6 +403,7 @@ const Business = () => {
                             onClick={() => handleCardClick(business)}
                         >
                             <div className="business-info">
+                                <div className='brand-name-heading'>{business.brand_name}</div>
                                 <h3>{business.business_name}</h3>
                                 <p><strong>Phone:</strong> {business.business_phone}</p>
                                 <p><strong>Email:</strong> {business.business_email}</p>

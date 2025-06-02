@@ -290,6 +290,11 @@
     border-bottom-right-radius: 12px;
 }
 
+.username-logout{
+    color: #EF6F53;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
 .dropdown-footer .logout-btn {
     color: #EF6F53;
     cursor: pointer;

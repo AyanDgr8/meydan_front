@@ -13,6 +13,8 @@ const Brand = () => {
     const [showForm, setShowForm] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [editingBrand, setEditingBrand] = useState(null);
+    const [selectedBrandId, setSelectedBrandId] = useState(null);
+    const [businessCenters, setBusinessCenters] = useState([]);
     const navigate = useNavigate();
 
     // Initialize all form fields with empty strings or 0 for numbers
@@ -41,15 +43,28 @@ const Brand = () => {
                 return;
             }
 
+            // Parse the token to check admin status
+            const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+            const isAdmin = tokenPayload.isAdmin || tokenPayload.role === 'admin';
+
+            // Admin users can access all brands
+            // Non-admin users need a brand_id
+            if (!isAdmin && !tokenPayload.brand_id) {
+                setError('Access denied. Not authorized to view brands.');
+                setIsLoading(false);
+                return;
+            }
+
             const response = await axios.get(`${process.env.REACT_APP_API_URL}/brand`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
             setBrands(response.data);
             setIsLoading(false);
+            setError(''); // Clear any previous errors
         } catch (error) {
             console.error('Error fetching brands:', error);
-            setError('Error fetching brands');
+            setError(error.response?.data?.message || 'Error fetching brands');
             setIsLoading(false);
         }
     };
@@ -153,8 +168,41 @@ const Brand = () => {
         }
     };
 
-    const handleCardClick = (brandId) => {
-        navigate(`/business/${brandId}/teams`);
+    const handleCardClick = async (brandId) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Not authenticated');
+                return;
+            }
+
+            // Get business centers for the selected brand
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/brand/${brandId}/business-centers`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            setSelectedBrandId(brandId);
+            setBusinessCenters(response.data);
+            
+            // Navigate to business centers view
+            navigate(`/business`, { 
+                state: { 
+                    brandId,
+                    businessCenters: response.data,
+                    fromBrand: true
+                }
+            });
+        } catch (error) {
+            console.error('Error fetching business centers:', error);
+            setError(error.response?.data?.message || 'Error fetching business centers');
+            
+            // Auto-clear error after 3 seconds
+            setTimeout(() => {
+                setError('');
+            }, 3000);
+        }
     };
 
     const resetForm = () => {

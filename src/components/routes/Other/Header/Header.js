@@ -16,11 +16,43 @@ const Header = () => {
     const [userRole, setUserRole] = useState('');
     const navigate = useNavigate(); 
 
+    useEffect(() => {
+        console.log('Header mounted');
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                // Parse the JWT token (it's in base64)
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const tokenData = JSON.parse(window.atob(base64));
+                
+                console.log('Parsed token data:', tokenData);
+                
+                if (tokenData.username && tokenData.role) {
+                    setUsername(tokenData.username);
+                    setUserRole(tokenData.role);
+                    console.log('Set user data from token:', {
+                        username: tokenData.username,
+                        role: tokenData.role
+                    });
+                } else {
+                    console.log('Token data missing username or role, falling back to API');
+                    fetchUser();
+                }
+            } catch (error) {
+                console.error('Error parsing token:', error);
+                fetchUser(); // Fallback to API call if token parsing fails
+            }
+        }
+        setIsLoading(false);
+    }, []);
+
     const fetchUser = async () => {
+        console.log('Fetching user data from API...');
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                setIsLoading(false);
+                console.log('No token found');
                 return;
             }
 
@@ -31,20 +63,21 @@ const Header = () => {
                 },
             });
             
-            console.log('User data from API:', response.data);
-            setUsername(response.data.username || '');
-            setUserRole(response.data.role || '');
-            console.log('Set user role to:', response.data.role);
+            const userData = response.data;
+            console.log('API Response:', userData);
+
+            if (userData.username && userData.role) {
+                setUsername(userData.username);
+                setUserRole(userData.role);
+                console.log('Set user data from API:', {
+                    username: userData.username,
+                    role: userData.role
+                });
+            }
         } catch (error) {
             console.error('Error fetching user data:', error);
-        } finally {
-            setIsLoading(false);
         }
     };
-
-    useEffect(() => {
-        fetchUser();
-    }, []);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -201,17 +234,35 @@ const Header = () => {
                                 aria-label="Profile"
                             />
                             <div className="dropdown-content">
-                                {userRole === 'admin' && (
-                                    <Link to="/brand">Brand Management</Link>
+                                {process.env.NODE_ENV === 'development' && (
+                                    <div style={{padding: '1px', borderBottom: '1px solid #ccc', fontSize: '12px', color: '#666'}}>
+                                        Current Role: {userRole || 'none'}
+                                    </div>
                                 )}
-                                <Link to="/business">Business Center Management</Link>
-                                <Link to="/receptionist">Receptionist Management</Link>
-                                <Link to="/admin">Companies and Users</Link>
+                                
+                                {/* Admin check */}
+                                {userRole === 'admin' && (
+                                    <>
+                                        <Link to="/brand">Brand Management</Link>
+                                        <Link to="/business">Business Center Management</Link>
+                                        <Link to="/receptionist">Receptionist Management</Link>
+                                        <Link to="/admin">Companies and Users</Link>
+                                    </>
+                                )}
+                                
+                                {/* Non-admin menu */}
+                                {userRole !== 'admin' && (
+                                    <>
+                                        <Link to="/business">Business Center Management</Link>
+                                        <Link to="/receptionist">Receptionist Management</Link>
+                                        <Link to="/admin">Companies and Users</Link>
+                                    </>
+                                )}
                                 <div className="dropdown-divider"></div>
-                                <div className="dropdown-footer">
-                                    <span onClick={handleLogout} className="logout-btn">Logout</span>
+                                <div className="dropdown-footer" onClick={handleLogout}>
+                                    <span  className="logout-btn">Logout</span>
                                     {!isLoading && username && (
-                                        <span className="username">{username}</span>
+                                        <span className="username-logout">{username}</span>
                                     )}
                                 </div>
                             </div>

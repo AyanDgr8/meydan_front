@@ -253,6 +253,13 @@
     transform: translateY(0);
 }
 
+.brand-name-heading {
+    color: #1976d2;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
 .error-message {
     background-color: #fce4e4;
     border: 1px solid #fcc2c3;

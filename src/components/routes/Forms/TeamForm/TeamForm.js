@@ -286,7 +286,8 @@ const TeamForm = () => {
                 </button>
             </div>
             <div>
-                <p className="team-prompt"><strong>PROMPT:</strong> {teamDetails.team_prompt || 'No team prompt available'}</p>
+                <strong>PROMPT</strong>
+                <p className="team-prompt">{teamDetails.team_prompt || 'No team prompt available'}</p>
             </div>
 
             <div className="team-info">

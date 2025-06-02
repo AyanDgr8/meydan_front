@@ -136,16 +136,21 @@ const Login = () => {
                     localStorage.setItem('businessId', userData.business_center_id);
                 }
 
-                // Redirect based on role
-                if (userData.role === 'admin') {
-                    navigate('/admin', { replace: true });
-                } else if (userData.role === 'brand_admin') {
-                    navigate('/brand', { replace: true });
+                // Navigate and reload based on role
+                let targetPath = '/brand'; // default path
+                if (userData.role === 'brand_admin') {
+                    targetPath = '/brand';
                 } else if (userData.role === 'brand_user') {
-                    navigate('/business', { replace: true });
+                    targetPath = '/business';
                 } else if (userData.role === 'receptionist') {
-                    navigate('/receptionist', { replace: true });
+                    targetPath = '/receptionist';
                 }
+
+                // First navigate, then reload after a short delay to ensure storage is set
+                navigate(targetPath, { replace: true });
+                setTimeout(() => {
+                    window.location.href = targetPath; // Use href instead of reload to ensure we're on the right page
+                }, 100);
             } else {
                 throw new Error('Invalid response from server');
             }
