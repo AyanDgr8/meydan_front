@@ -13,9 +13,11 @@ const TeamForm = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [editingMember, setEditingMember] = useState(null);
+    const [role, setRole] = useState(null);
     const [memberFormData, setMemberFormData] = useState({
         username: '',
         designation: '',
+        department: '',
         email: '',
         mobile_num: '',
         mobile_num_2: ''
@@ -25,6 +27,11 @@ const TeamForm = () => {
     const apiUrl = process.env.REACT_APP_API_URL;
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            setRole(tokenData.role);
+        }
         const fetchTeamDetails = async () => {
             try {
                 const token = localStorage.getItem('token');
@@ -135,6 +142,7 @@ const TeamForm = () => {
         setMemberFormData({
             username: member.username,
             designation: member.designation,
+            department: member.department,
             email: member.email,
             mobile_num: member.mobile_num,
             mobile_num_2: member.mobile_num_2 || ''
@@ -240,6 +248,7 @@ const TeamForm = () => {
         setMemberFormData({
             username: '',
             designation: '',
+            department: '',
             email: '',
             mobile_num: '',
             mobile_num_2: ''
@@ -314,7 +323,7 @@ const TeamForm = () => {
                 </div>
             </div>
 
-            <div className="team-members">
+            <div className="team-memberss">
                 <h2>Company Members ({teamMembers.length})</h2>
 
                 {/* Success and Error Messages */}
@@ -390,6 +399,21 @@ const TeamForm = () => {
                                     </div>
                                 </div>
                                 <div className="form-groupppp">
+                                    <label htmlFor="department">Department:</label>
+                                    <div className="input-container">
+                                        <input
+                                            type="text"
+                                            id="department"
+                                            name="department"
+                                            value={memberFormData.department}
+                                            onChange={handleInputChange}
+                                            placeholder="Department"
+                                            className={error ? 'error' : ''}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="form-groupppp">
                                     <label htmlFor="designation">Designation:</label>
                                     <div className="input-container">
                                         <input
@@ -419,14 +443,17 @@ const TeamForm = () => {
                         <div key={member.id} className="member-card">
                             <h3>{member.username}</h3>
                             <div className="member-details">
-                                <p><strong>Role:</strong> {member.designation}</p>
+                                <p><strong>Department:</strong> {member.department}</p>
+                                <p><strong>Designation:</strong> {member.designation}</p>
                                 <p><strong>Email:</strong> {member.email}</p>
                                 <p><strong>Phone:</strong> <a href={`tel:${member.mobile_num}`}>{member.mobile_num}</a></p>
                             </div>
-                            <div className="member-actions">
-                                <button onClick={() => handleMemberEdit(member)}>Edit</button>
-                                <button onClick={() => handleMemberDelete(member.id)}>Delete</button>
-                            </div>
+                            {role !== 'receptionist' && (
+                                <div className="member-actions">
+                                    <button onClick={() => handleMemberEdit(member)}>Edit</button>
+                                    <button onClick={() => handleMemberDelete(member.id)}>Delete</button>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

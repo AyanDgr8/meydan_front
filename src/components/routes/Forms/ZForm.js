@@ -1,7 +1,7 @@
 // src/components/routes/Forms/ZForm.js
 
 import React from "react";
-import { Routes, Route, useParams } from 'react-router-dom';
+import { Routes, Route, useParams, Navigate } from 'react-router-dom';
 import SearchForm from "./SearchForm/SearchForm";
 import UseForm from "./UseForm/UseForm";
 // import ListForm from "./ListForm/ListForm";
@@ -23,6 +23,41 @@ import Brand from "./AdminPortal/Brand/Brand";
 import Receptionist from "./AdminPortal/Receptionist/Receptionist";
 import Center from "./AdminPortal/Business/Center";
 
+// AdminRoute component to protect admin-only routes
+const AdminRoute = ({ children }) => {
+    const token = localStorage.getItem('token');
+    let isAdmin = false;
+    
+    if (token) {
+        try {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            isAdmin = tokenData.role === 'admin';
+        } catch (error) {
+            console.error('Error parsing token:', error);
+        }
+    }
+    
+    return isAdmin ? children : <Navigate to="/login" replace />;
+};
+
+// AdminRoute component to protect admin-only routes
+const BrandRoute = ({ children }) => {
+    const token = localStorage.getItem('token');
+    let isAdmin = false;
+    
+    if (token) {
+        try {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            isAdmin = tokenData.role === 'brand_user' || tokenData.role === 'admin';
+        } catch (error) {
+            console.error('Error parsing token:', error);
+        }
+    }
+    
+    return isAdmin ? children : <Navigate to="/login" replace />;
+};
+
+
 const ZForm = () => {
     return (
         <Routes>
@@ -30,10 +65,27 @@ const ZForm = () => {
             {/* Admin Portal - Protected by AdminGuard */}
             <Route path="/admin" element={<AdminPortal />} />
             
+            {/* Brand Management - Admin Only */}
+            <Route path="/brand" element={
+                <AdminRoute>
+                    <Brand />
+                </AdminRoute>
+            } />
+            
             {/* Business Center Management Routes */}
-            <Route path="/business" element={<Business />} />
+
+            <Route path="/business" element={
+                <BrandRoute>
+                    <Business />
+                </BrandRoute>
+            } />
+            
             <Route path="/business/center" element={<Center />} />
-            <Route path="/business/receptionist" element={<Receptionist />} />
+            <Route path="/business/receptionist" element={
+                <BrandRoute>
+                    <Receptionist />
+                </BrandRoute>
+            } />
             <Route path="/business/center/:businessId" element={<Center />} />
             <Route path="/business/:businessId/teams" element={<Center />} />
             <Route path="/business/:businessId/team/:teamName" element={<TeamForm />} />
@@ -41,10 +93,12 @@ const ZForm = () => {
             {/* Alternative business center route */}
             <Route path="/business/:teamName" element={<TeamForm />} />
             
-            <Route path="/brand" element={<Brand />} />
-
             {/* Receptionist Routes */}
-            <Route path="/receptionist" element={<Receptionist />} />
+            <Route path="/receptionist" element={
+                <BrandRoute>
+                    <Receptionist />
+                </BrandRoute>
+            } />
 
             {/* Search for a customer */}
             <Route path="/customers/search" element={<SearchForm />} />

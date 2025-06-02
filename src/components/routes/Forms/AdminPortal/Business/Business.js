@@ -13,6 +13,7 @@ const Business = () => {
     const [showForm, setShowForm] = useState(false);
     const [editingBusiness, setEditingBusiness] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [brandLimits, setBrandLimits] = useState(null);
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -21,16 +22,13 @@ const Business = () => {
         business_whatsapp: '',
         business_email: '',
         business_password: '',
+        business_person: '',
         business_address: '',
         business_country: '',
         business_tax_id: '',
         business_reg_no: '',
         other_detail: ''
     });
-
-    useEffect(() => {
-        fetchBusinesses();
-    }, []);
 
     const fetchBusinesses = async () => {
         try {
@@ -54,6 +52,32 @@ const Business = () => {
         }
     };
 
+    const fetchBrandLimits = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Not authenticated');
+                return;
+            }
+
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/brand/limits`,
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }
+            );
+            setBrandLimits(response.data);
+        } catch (error) {
+            console.error('Error fetching brand limits:', error);
+            setError('Error fetching brand limits');
+        }
+    };
+
+    useEffect(() => {
+        fetchBusinesses();
+        fetchBrandLimits();
+    }, []);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -68,6 +92,12 @@ const Business = () => {
         setSuccess('');
 
         try {
+            if (!editingBusiness && businesses.length >= brandLimits?.centers) {
+                setError(`Cannot create more business centers. Brand limit (${brandLimits.centers}) reached.`);
+                setTimeout(() => setError(''), 3000);
+                return;
+            }
+
             const token = localStorage.getItem('token');
             if (!token) {
                 setError('Not authenticated');
@@ -128,6 +158,7 @@ const Business = () => {
             business_whatsapp: business.business_whatsapp,
             business_email: business.business_email,
             business_password: business.business_password,
+            business_person: business.business_person,
             business_address: business.business_address,
             business_country: business.business_country,
             business_tax_id: business.business_tax_id,
@@ -172,6 +203,7 @@ const Business = () => {
             business_whatsapp: '',
             business_email: '',
             business_password: '',
+            business_person: '',
             business_address: '',
             business_country: '',
             business_tax_id: '',
@@ -180,6 +212,15 @@ const Business = () => {
         });
         setEditingBusiness(null);
         setShowForm(false);
+    };
+
+    const handleAddBusinessClick = () => {
+        if (businesses.length >= brandLimits?.centers) {
+            setError(`Maximum limit of ${brandLimits.centers} business centers has been reached for this brand.`);
+            setTimeout(() => setError(''), 3000);
+            return;
+        }
+        setShowForm(true);
     };
 
     if (isLoading) {
@@ -195,7 +236,7 @@ const Business = () => {
 
             <button 
                 className="add-business-btn"
-                onClick={() => setShowForm(!showForm)}
+                onClick={handleAddBusinessClick}
             >
                 {showForm ? 'Cancel' : 'Add New Business Center'}
             </button>
@@ -213,6 +254,20 @@ const Business = () => {
                                         name="business_name"
                                         value={formData.business_name}
                                         onChange={handleInputChange}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-groupppp">
+                                <label htmlFor="business_person">Contact Person:</label>
+                                <div className="input-container">
+                                    <input
+                                        type="text"
+                                        id="business_person"
+                                        name="business_person"
+                                        value={formData.business_person}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter Contact Person Name"
                                         required
                                     />
                                 </div>
@@ -389,7 +444,6 @@ const Business = () => {
 
             <div className="businesses-list">
                 <h3 className="business-list-title">Business List</h3>
-                {error && <div className="error-message">{error}</div>}
                 {businesses.length === 0 && !error && !isLoading && (
                     <div className="no-businesses-message">
                         No business centers found. Create one using the form above.
@@ -405,6 +459,7 @@ const Business = () => {
                             <div className="business-info">
                                 <div className='brand-name-heading'>{business.brand_name}</div>
                                 <h3>{business.business_name}</h3>
+                                <p><strong>Contact Person:</strong> {business.business_person}</p>
                                 <p><strong>Phone:</strong> {business.business_phone}</p>
                                 <p><strong>Email:</strong> {business.business_email}</p>
                                 <p><strong>Country:</strong> {business.business_country}</p>

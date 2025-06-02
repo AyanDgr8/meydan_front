@@ -15,6 +15,7 @@ const Brand = () => {
     const [editingBrand, setEditingBrand] = useState(null);
     const [selectedBrandId, setSelectedBrandId] = useState(null);
     const [businessCenters, setBusinessCenters] = useState([]);
+    const [isAdmin, setIsAdmin] = useState(false);
     const navigate = useNavigate();
 
     // Initialize all form fields with empty strings or 0 for numbers
@@ -25,6 +26,8 @@ const Brand = () => {
         brand_password: '',
         brand_tax_id: '',
         brand_reg_no: '',
+        brand_person: '',
+        centers: 0,
         companies: 0,
         associates: 0,
         receptionist: 0,
@@ -33,6 +36,16 @@ const Brand = () => {
 
     useEffect(() => {
         fetchBrands();
+        // Check if user is admin from JWT token
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const tokenData = JSON.parse(atob(token.split('.')[1]));
+                setIsAdmin(tokenData.role === 'admin');
+            } catch (error) {
+                console.error('Error parsing token:', error);
+            }
+        }
     }, []);
 
     const fetchBrands = async () => {
@@ -136,6 +149,8 @@ const Brand = () => {
             brand_password: brand.brand_password,
             brand_tax_id: brand.brand_tax_id,
             brand_reg_no: brand.brand_reg_no,
+            brand_person: brand.brand_person,
+            centers: brand.centers,
             companies: brand.companies,
             associates: brand.associates,
             receptionist: brand.receptionist,
@@ -213,6 +228,8 @@ const Brand = () => {
             brand_password: '',
             brand_tax_id: '',
             brand_reg_no: '',
+            brand_person: '',
+            centers: 0,
             companies: 0,
             associates: 0,
             receptionist: 0,
@@ -234,14 +251,16 @@ const Brand = () => {
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
 
-            <button 
-                className="add-brand-btn"
-                onClick={() => setShowForm(!showForm)}
-            >
-                {showForm ? 'Cancel' : 'Add New Business Center Group'}
-            </button>
+            {isAdmin && (
+                <button 
+                    className="add-brand-btn"
+                    onClick={() => setShowForm(!showForm)}
+                >
+                    {showForm ? 'Cancel' : 'Add New Business Center Group'}
+                </button>
+            )}
 
-            {showForm && (
+            {(showForm && isAdmin) && (
                 <form onSubmit={handleSubmit} className="brand-form">
                     <h3>{editingBrand ? 'Edit Brand' : 'Add New Business Center Group'}</h3>
                     
@@ -260,6 +279,21 @@ const Brand = () => {
                                 />
                             </div>
                         </div>
+
+                        <div className="form-groupppp">
+                            <label htmlFor="brand_person">Contact Person:</label>
+                            <div className="input-container">
+                                <input
+                                    type="text"
+                                    id="brand_person"
+                                    name="brand_person"
+                                    value={formData.brand_person}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter Contact Person Name"
+                                />
+                            </div>
+                        </div>
+
                     </div>
 
                     {/* Email and Phone Row */}
@@ -273,6 +307,7 @@ const Brand = () => {
                                     name="brand_email"
                                     value={formData.brand_email}
                                     onChange={handleInputChange}
+                                    placeholder="Enter Email"
                                 />
                             </div>
                         </div>
@@ -329,19 +364,6 @@ const Brand = () => {
 
                     {/* Tax ID and Registration Number Row */}
                     <div className="form-rowww">
-
-                    <div className="form-groupppp">
-                            <label htmlFor="brand_phone">Phone:</label>
-                            <div className="input-container">
-                                <input
-                                    type="tel"
-                                    id="brand_phone"
-                                    name="brand_phone"
-                                    value={formData.brand_phone}
-                                    onChange={handleInputChange}
-                                />
-                            </div>
-                        </div>
                         <div className="form-groupppp">
                             <label htmlFor="brand_tax_id">Tax ID:</label>
                             <div className="input-container">
@@ -370,6 +392,18 @@ const Brand = () => {
 
                     {/* Companies, Associates, and Receptionists Row */}
                     <div className="form-rowww">
+                        <div className="form-groupppp">
+                            <label htmlFor="centers">Centers:</label>
+                            <div className="input-container">
+                                <input
+                                    type="number"
+                                    id="centers"
+                                    name="centers"
+                                    value={formData.centers}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                        </div>
                         <div className="form-groupppp">
                             <label htmlFor="companies">Companies:</label>
                             <div className="input-container">
@@ -451,6 +485,7 @@ const Brand = () => {
                             <div className="brand-row contact-row">
                                 <p><strong>Email:</strong> {brand.brand_email}</p>
                                 <p><strong>Phone:</strong> {brand.brand_phone}</p>
+                                <p><strong>Contact Person:</strong> {brand.brand_person}</p>
                             </div>
                             
                             <div className="brand-row id-row">
@@ -459,16 +494,12 @@ const Brand = () => {
                             </div>
                             
                             <div className="brand-row people-row">
+                                <p><strong>Centers:</strong> {brand.centers}</p>
                                 <p><strong>Companies:</strong> {brand.companies}</p>
                                 <p><strong>Associates:</strong> {brand.associates}</p>
                                 <p><strong>Receptionists:</strong> {brand.receptionist}</p>
                             </div>
-                            
-                            {brand.brand_other_detail && (
-                                <div className="brand-row other-row">
-                                    <p><strong>Other Details:</strong> {brand.brand_other_detail}</p>
-                                </div>
-                            )}
+
                         </div>
                         
                         <div className="brand-actions" onClick={(e) => e.stopPropagation()}>

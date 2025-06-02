@@ -210,9 +210,10 @@ const Login = () => {
                         navigate('/brand', { replace: true });
                     } else if (userData.role === 'brand_user') {
                         navigate('/business', { replace: true });
-                    } else if (userData.role === 'receptionist') {
-                        navigate('/receptionist', { replace: true });
                     } 
+                    else if (userData.role === 'receptionist') {
+                        navigate(`/business/center/${userData.business_center_id}`, { replace: true });
+                    }
                 } else {
                     // Clear expired session
                     localStorage.removeItem('token');

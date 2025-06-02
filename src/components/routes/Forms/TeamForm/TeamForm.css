@@ -29,9 +29,32 @@
 .team-prompt {
     color: white;
     margin: 0;
-    font-size: 2rem;
-    line-height: 2rem;
-    background-color: #EF6F53;
+    font-size: 1.5rem;
+    line-height: 1.75rem;
+    background: linear-gradient(135deg, #EF6F53 0%, #e85a3c 100%);
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 2px 4px rgba(239, 111, 83, 0.2);
+    transition: all 0.3s ease;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.team-prompt::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.team-prompt:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 111, 83, 0.3);
+    background: linear-gradient(135deg, #e85a3c 0%, #EF6F53 100%);
 }
 
 .view-records-btn {
@@ -59,7 +82,7 @@
 }
 
 .info-section {
-    background: #fff;
+    background: #f3f3f3;
     padding: 0.1rem;
     border-radius: 8px;
     margin-top: 0.75rem;
@@ -67,13 +90,13 @@
 }
 
 .info-section h2 {
-    color: #EF6F53;
+    color: #0056b3;
     margin: 0 0 0.5rem 0;
     font-size: 1rem;
     font-weight: bold;
     text-align: center;
     padding-bottom: 0.1rem;
-    border-bottom: 1px solid #EF6F53;
+    border-bottom: solid 2px #EF6F53;
 }
 
 .detail-item {
@@ -103,13 +126,16 @@
     font-size: 0.9rem;
 }
 
-.team-members {
-    margin-top: 0.5rem;
+.team-memberss {
+    margin-top: 1rem;
+    background-color: #f3f3f3;
+    padding: 0.5rem;
+    border-radius: 8px;
 }
 
-.team-members h2 {
+.team-memberss h2 {
     font-size: 1.25rem;
-    color: #364C63;
+    color: #0056b3;
     margin-bottom: 0.5rem;
     font-weight: bold;
     text-align: left;
@@ -119,7 +145,7 @@
     display: flex;
     overflow-x: auto;
     gap: 1rem;
-    padding: 0;
+    padding: 0.5rem;
     scrollbar-width: thin;
     scrollbar-color: #EF6F53 #f5f5f5;
 }
@@ -127,16 +153,17 @@
 /* Webkit scrollbar styling */
 .members-grid::-webkit-scrollbar {
     height: 3px;
+    border-radius: 5px;
 }
 
 .members-grid::-webkit-scrollbar-track {
     background: #f5f5f5;
-    border-radius: 4px;
+    border-radius: 5px;
 }
 
 .members-grid::-webkit-scrollbar-thumb {
     background-color: #EF6F53;
-    border-radius: 4px;
+    border-radius: 5px;
 }
 
 .member-card {
@@ -157,7 +184,7 @@
     font-size: 1rem;
     color: #EF6F53;
     margin-bottom: 0.1rem;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 1px solid #0056b3;
     font-weight: bold;
 }
 

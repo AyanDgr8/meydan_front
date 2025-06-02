@@ -15,12 +15,11 @@
 }
 
 .list_form_headi {
-  color: #EF6F53;
-  text-align: center;
-  font-size: 1.2rem;
-  font-weight: bold;
-  letter-spacing: 0.05rem;
+  margin: 0;
+  color: #364C63;
+  font-size: 1.5rem;
   text-transform: uppercase;
+  border-bottom: 2px solid #EF6F53;
 }
 
 .list_form_ul {
@@ -28,10 +27,8 @@
   padding: 0;
   margin: 1rem;
   font-size: 1rem;
-  /* width: 100%; */
   box-sizing: border-box;
 }
-
 
 
 /* Pagination Styling */
@@ -137,11 +134,35 @@ padding: 0.25rem;
   background-color: #e3f2fd;
 }
 
-.header-containerr {
+.header-containerrr {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
-  padding: 0.5rem;
+  padding: 1rem;
+  position: relative;
+}
+
+.header-center {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.home-icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.home-icon:hover {
+  transform: scale(1.1);
 }
 
 .add-record-btnnn {

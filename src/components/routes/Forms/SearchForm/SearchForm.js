@@ -134,6 +134,14 @@ const SearchForm = () => {
     }
   };
 
+  const handleHomeClick = () => {
+    const query = new URLSearchParams(location.search);
+    const currentTeam = query.get('team');
+    if (currentTeam) {
+      navigate(`/business/1/team/${currentTeam}`);
+    }
+  };
+
   useEffect(() => {
     fetchData();
     fetchTeamMembers();
@@ -194,158 +202,118 @@ const SearchForm = () => {
 
   return (
     <div className="list-container">
-      {teamMembers.length > 0 && (
-        <div className="team-members-section" style={{
-          height: '25vh',
-          backgroundColor: '#f5f5f5',
-          padding: '5px',
-          marginBottom: '10px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ marginBottom: '5px', color: '#364C63', fontSize: '16px', fontWeight: 'bold' }}>Company Members</h3>
-          <div style={{
-            display: 'flex',
-            overflowX: 'auto',
-            overflowY: 'hidden',
-            whiteSpace: 'nowrap',
-            padding: '5px',
-            gap: '10px',
-            scrollbarWidth: 'thin',
-            msOverflowStyle: 'none',
-            '&::-webkit-scrollbar': {
-              height: '6px'
-            },
-            '&::-webkit-scrollbar-track': {
-              background: '#f1f1f1',
-              borderRadius: '3px'
-            },
-            '&::-webkit-scrollbar-thumb': {
-              background: '#888',
-              borderRadius: '3px'
-            }
-          }}>
-            {teamMembers.map((member) => (
-              <div key={member.id} style={{
-                backgroundColor: 'white',
-                padding: '8px',
-                borderRadius: '6px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                minWidth: '200px',
-                maxWidth: '200px',
-                fontSize: '14px',
-                flex: '0 0 auto'
-              }}>
-                <div style={{ fontWeight: 'bold', color: '#EF6F53', marginBottom: '3px' }}>{member.username}</div>
-                <div style={{ marginBottom: '3px' }}><a href={`tel:${member.mobile_num}`} style={{ color: '#364C63', textDecoration: 'none' }}>{member.mobile_num}</a></div>
-                <div style={{ color: '#364C63', marginBottom: '3px' }}>{member.email}</div>
-                {member.designation && (
-                  <div style={{ color: '#364C63', fontStyle: 'italic' }}>{member.designation}</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       <div className="header-containerrr">
-        <h2 className="list_form_headi">{teamName ? `${teamName} Records` : 'Records'}</h2>
-        <button className="add-record-btnnn" onClick={handleAddRecord}>
-          Add New Record
-        </button>
+          <div className="header-left">
+            <img 
+              src="/uploads/house-fill.svg"
+              className="home-icon"
+              alt="home icon"
+              aria-label="Home"
+              onClick={handleHomeClick}
+            />
+          </div>
+          <div className="header-center">
+            <h2 className="list_form_headi">{teamName ? `${teamName} Records` : 'Records'}</h2>
+          </div>
+          <div className="header-right">
+            <button className="add-record-btnnn" onClick={handleAddRecord}>
+              Add New Record
+            </button>
+          </div>
       </div>
-      {loading ? (
-        <div className="loading">Loading...</div>
-      ) : (
-        <div className="table-container">
-          {searchResults.length > 0 ? (
-            <table className="customers-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Phone</th>
-                  <th>Email</th>
-                  <th>Designation</th>
-                  <th>Disposition</th>
-                  <th>Last Activity</th>
-                </tr>
-              </thead>
-              <tbody>
-                {getCurrentPageRecords().map((customer, index) => (
-                  <tr 
-                    key={customer.C_unique_id}
-                    className={selectedRecords.includes(customer.C_unique_id) ? 'selected-row' : ''}
-                    onClick={() => handleEdit(customer)}
-                  >
-                    <td>{customer.C_unique_id}</td>
-                    <td>{customer.customer_name}</td>
-                    <td><a href={`tel:${customer.phone_no_primary}`}>{customer.phone_no_primary}</a></td>
-                    <td>{customer.email_id}</td>
-                    <td>{customer.designation}</td>
-                    <td>{customer.disposition}</td>
-                    <td>{formatDateTime(customer.last_updated)}</td>
+        {loading ? (
+          <div className="loading">Loading...</div>
+        ) : (
+          <div className="table-container">
+            {searchResults.length > 0 ? (
+              <table className="customers-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Designation</th>
+                    <th>Disposition</th>
+                    <th>Last Activity</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p>No results found.</p>
-          )}
-        </div>
-      )}
-
-      {/* Pagination Controls */}
-      {searchResults.length > 0 && (
-        <div className="pagination-container">
-          <div className="pagination">
-            {currentPage > 1 && (
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                className="page-number"
-                aria-label="Previous page"
-              >
-                Previous
-              </button>
-            )}
-
-            {[...Array(Math.ceil(searchResults.length / recordsPerPage)).keys()].map((_, idx) => idx + 1)
-              .filter((pageNumber) => {
-                const totalPages = Math.ceil(searchResults.length / recordsPerPage);
-                return (
-                  pageNumber === 1 ||
-                  pageNumber === totalPages ||
-                  pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1
-                );
-              })
-              .map((pageNumber, index, array) => {
-                const isGap = array[index + 1] !== pageNumber + 1 && pageNumber !== Math.ceil(searchResults.length / recordsPerPage);
-                return (
-                  <React.Fragment key={pageNumber}>
-                    <button
-                      onClick={() => paginate(pageNumber)}
-                      className={`page-number ${currentPage === pageNumber ? 'active' : ''}`}
-                      aria-label={`Go to page ${pageNumber}`}
+                </thead>
+                <tbody>
+                  {getCurrentPageRecords().map((customer, index) => (
+                    <tr 
+                      key={customer.C_unique_id}
+                      className={selectedRecords.includes(customer.C_unique_id) ? 'selected-row' : ''}
+                      onClick={() => handleEdit(customer)}
                     >
-                      {pageNumber}
-                    </button>
-                    {isGap && <span className="ellipsis">...</span>}
-                  </React.Fragment>
-                );
-              })}
-
-            {currentPage < Math.ceil(searchResults.length / recordsPerPage) && (
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                className="page-number"
-                aria-label="Next page"
-              >
-                Next
-              </button>
+                      <td>{customer.C_unique_id}</td>
+                      <td>{customer.customer_name}</td>
+                      <td><a href={`tel:${customer.phone_no_primary}`}>{customer.phone_no_primary}</a></td>
+                      <td>{customer.email_id}</td>
+                      <td>{customer.designation}</td>
+                      <td>{customer.disposition}</td>
+                      <td>{formatDateTime(customer.last_updated)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>No results found.</p>
             )}
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {/* Pagination Controls */}
+        {searchResults.length > 0 && (
+          <div className="pagination-container">
+            <div className="pagination">
+              {currentPage > 1 && (
+                <button
+                  onClick={() => paginate(currentPage - 1)}
+                  className="page-number"
+                  aria-label="Previous page"
+                >
+                  Previous
+                </button>
+              )}
+
+              {[...Array(Math.ceil(searchResults.length / recordsPerPage)).keys()].map((_, idx) => idx + 1)
+                .filter((pageNumber) => {
+                  const totalPages = Math.ceil(searchResults.length / recordsPerPage);
+                  return (
+                    pageNumber === 1 ||
+                    pageNumber === totalPages ||
+                    pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1
+                  );
+                })
+                .map((pageNumber, index, array) => {
+                  const isGap = array[index + 1] !== pageNumber + 1 && pageNumber !== Math.ceil(searchResults.length / recordsPerPage);
+                  return (
+                    <React.Fragment key={pageNumber}>
+                      <button
+                        onClick={() => paginate(pageNumber)}
+                        className={`page-number ${currentPage === pageNumber ? 'active' : ''}`}
+                        aria-label={`Go to page ${pageNumber}`}
+                      >
+                        {pageNumber}
+                      </button>
+                      {isGap && <span className="ellipsis">...</span>}
+                    </React.Fragment>
+                  );
+                })}
+
+              {currentPage < Math.ceil(searchResults.length / recordsPerPage) && (
+                <button
+                  onClick={() => paginate(currentPage + 1)}
+                  className="page-number"
+                  aria-label="Next page"
+                >
+                  Next
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
   );
 };
 

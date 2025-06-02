@@ -35,6 +35,7 @@ const Center = () => {
     }]);
     const [newUser, setNewUser] = useState({
         username: '',
+        department: '',
         email: '',
         mobile_num: '',
         mobile_num_2: '',
@@ -43,6 +44,7 @@ const Center = () => {
     });
     const [newAssociate, setNewAssociate] = useState({
         username: '',
+        department: '',
         email: '',
         mobile_num: '',
         mobile_num_2: '',
@@ -50,6 +52,7 @@ const Center = () => {
         team_id: ''
     });
     const [editingTeam, setEditingTeam] = useState(null);
+    const [role, setRole] = useState(null);
 
     const fetchBusiness = async () => {
         try {
@@ -184,6 +187,14 @@ const Center = () => {
         fetchData();
     }, [businessId]);
 
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            setRole(tokenData.role);
+        }
+    }, []);
+
     const handleUserInputChange = (field, value) => {
         setNewUser(prev => ({
             ...prev,
@@ -229,6 +240,7 @@ const Center = () => {
                 setShowAssociateForm(false);
                 setNewUser({
                     username: '',
+                    department: '',
                     email: '',
                     mobile_num: '',
                     mobile_num_2: '',
@@ -359,6 +371,7 @@ const Center = () => {
                 setShowAssociateForm(false);
                 setNewAssociate({
                     username: '',
+                    department: '',
                     email: '',
                     mobile_num: '',
                     mobile_num_2: '',
@@ -514,6 +527,7 @@ const Center = () => {
         <div className="business-center-container">
             <div className="center-header">
                 <h2>{business?.business_name || 'Business Center'}</h2>
+                {role !== 'receptionist' && (
                 <button 
                     className="add-team-button"
                     onClick={handleAddTeamClick}
@@ -523,8 +537,15 @@ const Center = () => {
                 >
                     {showTeamForm ? 'Cancel' : 'Add Company'}
                 </button>
+                )}
             </div>
 
+
+            {messageVisible && (error || success) && (
+                <div className={`message-container ${error ? 'error' : 'success'}`}>
+                    {error || success}
+                </div>
+            )}
             {showTeamForm && (
                 <div className="sectionnnnn">
                     <h3 className='create-team-heading'>{editingTeam ? 'Edit Company' : 'Create Company'}</h3>
@@ -681,24 +702,28 @@ const Center = () => {
                                 <p><strong>Country:</strong> {team.team_country}</p>
                             </div>
                             <div className="team-actions">
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEdit(team);
-                                    }}
-                                >
-                                    Edit
-                                </button>
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (window.confirm(`Are you sure you want to delete ${team.team_name}?`)) {
-                                            handleDeleteTeam(e, team.id, team.team_name);
-                                        }
-                                    }}
-                                >
-                                    Delete
-                                </button>
+                                {role !== 'receptionist' && (
+                                    <>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleEdit(team);
+                                            }}
+                                        >
+                                            Edit
+                                        </button>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (window.confirm(`Are you sure you want to delete ${team.team_name}?`)) {
+                                                    handleDeleteTeam(e, team.id, team.team_name);
+                                                }
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -709,157 +734,166 @@ const Center = () => {
             </div> 
 
             {/* Associates List Section */}
-            <div className="sectionnnnn ass-section">
-                <div className="section-header">
-                    <h3 className="create-team-headingg">Associates</h3>
-                    <button 
-                        className="add-team-button"
-                        onClick={() => {
-                            if (brandLimits && associates.length >= brandLimits.associates) {
-                                setError('Cannot create more associates. Brand limit reached.');
-                                setMessageVisible(true);
-                                setTimeout(() => setMessageVisible(false), 3000);
-                                return;
-                            }
-                            setShowAssociateForm(!showAssociateForm);
-                        }}
-                        title={brandLimits && associates.length >= brandLimits.associates ? 
-                            `Maximum associate limit reached (${brandLimits.associates} associates)` : 
-                            'Add new associate'}
-                    >
-                        {showAssociateForm ? 'Cancel' : 
-                            (brandLimits && associates.length >= brandLimits.associates) ? 
-                            'Cannot create more associates. Brand limit reached.' : 
-                            'Add Associate'}
-                    </button>
-                </div>
-                {brandLimits && associates.length >= brandLimits.associates && (
-                    <div className="team-limit-warning">
-                        Maximum number of associates reached ({brandLimits.associates} associates)
+            {role !== 'receptionist' && (
+                <div className="sectionnnnn ass-section">
+                    <div className="section-header">
+                        <h3 className="create-team-headingg">Associates</h3>
+                        <button 
+                            className="add-team-button"
+                            onClick={() => {
+                                if (brandLimits && associates.length >= brandLimits.associates) {
+                                    setError('Cannot create more associates. Brand limit reached.');
+                                    setMessageVisible(true);
+                                    setTimeout(() => setMessageVisible(false), 3000);
+                                    return;
+                                }
+                                setShowAssociateForm(!showAssociateForm);
+                            }}
+                            title={brandLimits && associates.length >= brandLimits.associates ? 
+                                `Maximum associate limit reached (${brandLimits.associates} associates)` : 
+                                'Add new associate'}
+                        >
+                            {showAssociateForm ? 'Cancel' : 
+                                (brandLimits && associates.length >= brandLimits.associates) ? 
+                                'Cannot create more associates. Brand limit reached.' : 
+                                'Add Associate'}
+                        </button>
                     </div>
-                )}
+                    {brandLimits && associates.length >= brandLimits.associates && (
+                        <div className="team-limit-warning">
+                            Maximum number of associates reached ({brandLimits.associates} associates)
+                        </div>
+                    )}
 
-                {showAssociateForm && (
-                    <div className="sectionnnnn">
-                        <h3 className='create-team-heading'>Create Associate</h3>
-                        <div className='team-inputsss'>
-                            <div className="team-inputtt">
-                                <div className="form-rowww">
-                                    <div className="form-groupppp">
-                                        <label htmlFor="username">Username:</label>
-                                        <div className="input-container">
-                                            <input
-                                                type="text"
-                                                id="username"
-                                                value={newAssociate.username}
-                                                onChange={(e) => handleAssociateInputChange('username', e.target.value)}
-                                                placeholder="Username"
-                                                className={fieldErrors.username ? 'error' : ''}
-                                            />
-                                            {fieldErrors.username && <span className="error-message">{fieldErrors.username}</span>}
+                    {showAssociateForm && (
+                        <div className="sectionnnnn">
+                            <h3 className='create-team-heading'>Create Associate</h3>
+                            <div className='team-inputsss'>
+                                <div className="team-inputtt">
+                                    <div className="form-rowww">
+                                        <div className="form-groupppp">
+                                            <label htmlFor="username">Username:</label>
+                                            <div className="input-container">
+                                                <input
+                                                    type="text"
+                                                    id="username"
+                                                    value={newAssociate.username}
+                                                    onChange={(e) => handleAssociateInputChange('username', e.target.value)}
+                                                    placeholder="Enter name"
+                                                    className={fieldErrors.username ? 'error' : ''}
+                                                />
+                                                {fieldErrors.username && <span className="error-message">{fieldErrors.username}</span>}
+                                            </div>
+                                        </div>
+                                        <div className="form-groupppp">
+                                            <label htmlFor="email">Email:</label>
+                                            <div className="input-container">
+                                                <input
+                                                    type="email"
+                                                    id="email"
+                                                    value={newAssociate.email}
+                                                    onChange={(e) => handleAssociateInputChange('email', e.target.value)}
+                                                    placeholder="Email"
+                                                    className={fieldErrors.email ? 'error' : ''}
+                                                />
+                                                {fieldErrors.email && <span className="error-message">{fieldErrors.email}</span>}
+                                            </div>
+                                        </div>
+                                        <div className="form-groupppp">
+                                            <label htmlFor="mobile_num">Mobile Number:</label>
+                                            <div className="input-container">
+                                                <input
+                                                    type="text"
+                                                    id="mobile_num"
+                                                    value={newAssociate.mobile_num}
+                                                    onChange={(e) => handleAssociateInputChange('mobile_num', e.target.value)}
+                                                    placeholder="Mobile Number"
+                                                    className={fieldErrors.mobile_num ? 'error' : ''}
+                                                />
+                                                {fieldErrors.mobile_num && <span className="error-message">{fieldErrors.mobile_num}</span>}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="form-groupppp">
-                                        <label htmlFor="email">Email:</label>
-                                        <div className="input-container">
-                                            <input
-                                                type="email"
-                                                id="email"
-                                                value={newAssociate.email}
-                                                onChange={(e) => handleAssociateInputChange('email', e.target.value)}
-                                                placeholder="Email"
-                                                className={fieldErrors.email ? 'error' : ''}
-                                            />
-                                            {fieldErrors.email && <span className="error-message">{fieldErrors.email}</span>}
+                                    <div className="form-rowww">
+                                        <div className="form-groupppp">
+                                            <label htmlFor="mobile_num_2">Alternative Mobile:</label>
+                                            <div className="input-container">
+                                                <input
+                                                    type="text"
+                                                    id="mobile_num_2"
+                                                    value={newAssociate.mobile_num_2}
+                                                    onChange={(e) => handleAssociateInputChange('mobile_num_2', e.target.value)}
+                                                    placeholder="Alternative Mobile Number"
+                                                    className={fieldErrors.mobile_num_2 ? 'error' : ''}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="form-groupppp">
-                                        <label htmlFor="mobile_num">Mobile Number:</label>
-                                        <div className="input-container">
-                                            <input
-                                                type="text"
-                                                id="mobile_num"
-                                                value={newAssociate.mobile_num}
-                                                onChange={(e) => handleAssociateInputChange('mobile_num', e.target.value)}
-                                                placeholder="Mobile Number"
-                                                className={fieldErrors.mobile_num ? 'error' : ''}
-                                            />
-                                            {fieldErrors.mobile_num && <span className="error-message">{fieldErrors.mobile_num}</span>}
+                                        <div className="form-groupppp">
+                                            <label htmlFor="department">Department:</label>
+                                            <div className="input-container">
+                                                <input
+                                                    type="text"
+                                                    id="department"
+                                                    value={newAssociate.department}
+                                                    onChange={(e) => handleAssociateInputChange('department', e.target.value)}
+                                                    placeholder="Department"
+                                                    className={fieldErrors.department ? 'error' : ''}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div className="form-rowww">
-                                    <div className="form-groupppp">
-                                        <label htmlFor="mobile_num_2">Alternative Mobile:</label>
-                                        <div className="input-container">
-                                            <input
-                                                type="text"
-                                                id="mobile_num_2"
-                                                value={newAssociate.mobile_num_2}
-                                                onChange={(e) => handleAssociateInputChange('mobile_num_2', e.target.value)}
-                                                placeholder="Alternative Mobile Number"
-                                                className={fieldErrors.mobile_num_2 ? 'error' : ''}
-                                            />
+                                        <div className="form-groupppp">
+                                            <label htmlFor="designation">Designation:</label>
+                                            <div className="input-container">
+                                                <input
+                                                    type="text"
+                                                    id="designation"
+                                                    value={newAssociate.designation}
+                                                    onChange={(e) => handleAssociateInputChange('designation', e.target.value)}
+                                                    placeholder="Designation"
+                                                    className={fieldErrors.designation ? 'error' : ''}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="form-groupppp">
-                                        <label htmlFor="designation">Designation:</label>
-                                        <div className="input-container">
-                                            <input
-                                                type="text"
-                                                id="designation"
-                                                value={newAssociate.designation}
-                                                onChange={(e) => handleAssociateInputChange('designation', e.target.value)}
-                                                placeholder="Designation"
-                                                className={fieldErrors.designation ? 'error' : ''}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="form-groupppp">
-                                        <label htmlFor="team_id">Team:</label>
-                                        <div className="input-container">
-                                            <select
-                                                id="team_id"
-                                                value={newAssociate.team_id}
-                                                onChange={(e) => handleAssociateInputChange('team_id', e.target.value)}
-                                                className={fieldErrors.team_id ? 'error' : ''}
-                                            >
-                                                <option value="">Select Team</option>
-                                                {teams.map(team => (
-                                                    <option key={team.id} value={team.id}>{team.team_name}</option>
-                                                ))}
-                                            </select>
-                                            {fieldErrors.team_id && <span className="error-message">{fieldErrors.team_id}</span>}
+                                        <div className="form-groupppp">
+                                            <label htmlFor="team_id">Team:</label>
+                                            <div className="input-container">
+                                                <select
+                                                    id="team_id"
+                                                    value={newAssociate.team_id}
+                                                    onChange={(e) => handleAssociateInputChange('team_id', e.target.value)}
+                                                    className={fieldErrors.team_id ? 'error' : ''}
+                                                >
+                                                    <option value="">Select Team</option>
+                                                    {teams.map(team => (
+                                                        <option key={team.id} value={team.id}>{team.team_name}</option>
+                                                    ))}
+                                                </select>
+                                                {fieldErrors.team_id && <span className="error-message">{fieldErrors.team_id}</span>}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div className="button-containerr">
-                            <button onClick={handleCreateAssociate} className="create-button">Create Associate</button>
-                        </div>
-                    </div>
-                )}
-
-                {/* <div className="associates-grid">
-                    {associates.map(associate => (
-                        <div key={associate.id} className="associate-card">
-                            <h4>{associate.username}</h4>
-                            <div className="associate-details">
-                                <p><strong>Email:</strong> {associate.email}</p>
-                                <p><strong>Mobile:</strong> {associate.mobile_num}</p>
-                                <p><strong>Alt Mobile:</strong> {associate.mobile_num_2 || 'N/A'}</p>
-                                <p><strong>Designation:</strong> {associate.designation}</p>
-                                <p><strong>Team:</strong> {teams.find(t => t.id === associate.team_id)?.team_name || 'N/A'}</p>
+                            <div className="button-containerr">
+                                <button onClick={handleCreateAssociate} className="create-button">Create Associate</button>
                             </div>
                         </div>
-                    ))}
-                </div> */}
-            </div>
+                    )}
 
-            {messageVisible && (error || success) && (
-                <div className={`message-container ${error ? 'error' : 'success'}`}>
-                    {error || success}
+                    {/* <div className="associates-grid">
+                        {associates.map(associate => (
+                            <div key={associate.id} className="associate-card">
+                                <h4>{associate.username}</h4>
+                                <div className="associate-details">
+                                    <p><strong>Email:</strong> {associate.email}</p>
+                                    <p><strong>Mobile:</strong> {associate.mobile_num}</p>
+                                    <p><strong>Alt Mobile:</strong> {associate.mobile_num_2 || 'N/A'}</p>
+                                    <p><strong>Designation:</strong> {associate.designation}</p>
+                                    <p><strong>Team:</strong> {teams.find(t => t.id === associate.team_id)?.team_name || 'N/A'}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div> */}
                 </div>
             )}
         </div>
