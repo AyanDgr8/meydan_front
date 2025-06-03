@@ -404,13 +404,31 @@ const Center = () => {
                 return;
             }
 
-            await axios.delete(`${process.env.REACT_APP_API_URL}/team/${teamId}`, {
+            const response = await axios({
+                method: 'delete',
+                url: `${process.env.REACT_APP_API_URL}/team/${teamId}`,
                 headers: {
                     Authorization: `Bearer ${token}`
-                }
+                },
+                responseType: 'blob' // Important: This tells axios to handle the response as a blob
             });
 
-            setSuccess(`${teamName} deleted successfully`);
+            // Create a blob from the response data
+            const blob = new Blob([response.data], { 
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+            });
+
+            // Create a link element and trigger the download
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `team_${teamName}_data.xlsx`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(downloadUrl);
+
+            setSuccess(`${teamName} deleted successfully and data downloaded`);
             fetchTeams();
 
             // Auto-clear success message after 3 seconds
@@ -692,7 +710,7 @@ const Center = () => {
                         <div 
                             key={team.id} 
                             className="team-cardd"
-                            onClick={() => navigate(`/business/${businessId}/team/${encodeURIComponent(team.team_name)}`)}
+                            onClick={() => navigate(`/business/${businessId}/team/${team.team_name.replace(/\s+/g, '_')}`)}
                             style={{ cursor: 'pointer' }}
                         >
                             <h4>{team.team_name}</h4>

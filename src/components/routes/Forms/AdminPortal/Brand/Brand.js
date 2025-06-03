@@ -27,10 +27,10 @@ const Brand = () => {
         brand_tax_id: '',
         brand_reg_no: '',
         brand_person: '',
-        centers: 0,
-        companies: 0,
-        associates: 0,
-        receptionist: 0,
+        centers: 1,
+        companies: 1,
+        associates: 1,
+        receptionist: 1,
         brand_other_detail: ''
     });
 
@@ -229,10 +229,10 @@ const Brand = () => {
             brand_tax_id: '',
             brand_reg_no: '',
             brand_person: '',
-            centers: 0,
-            companies: 0,
-            associates: 0,
-            receptionist: 0,
+            centers: 1,
+            companies: 1,
+            associates: 1,
+            receptionist: 1,
             brand_other_detail: ''
         });
         setEditingBrand(null);
@@ -311,8 +311,20 @@ const Brand = () => {
                                 />
                             </div>
                         </div>
-
                         <div className="form-groupppp">
+                            <label htmlFor="brand_phone">Phone :</label>
+                            <div className="input-container">
+                                <input
+                                    type="text"
+                                    id="brand_phone"
+                                    name="brand_phone"
+                                    value={formData.brand_phone}
+                                    onChange={handleInputChange}
+                                />
+                            </div>
+                        </div>
+
+                        {/* <div className="form-groupppp">
                                 <div className="password-label-group">
                                     <label htmlFor="business_password">App Password:</label>
                                     <div className="info-icon-container">
@@ -359,7 +371,7 @@ const Brand = () => {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                        </div> */}
                     </div>
 
                     {/* Tax ID and Registration Number Row */}

@@ -167,7 +167,7 @@
 }
 
 .member-card {
-    flex: 0 0 250px; /* Fixed width, no grow, no shrink */
+    flex: 0 0 275px; /* Fixed width, no grow, no shrink */
     background: white;
     padding: 0.1rem;
     margin-left: 0.2rem;

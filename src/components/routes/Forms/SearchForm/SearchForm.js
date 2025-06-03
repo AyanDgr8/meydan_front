@@ -130,7 +130,7 @@ const SearchForm = () => {
     const query = new URLSearchParams(location.search);
     const teamName = query.get('team');
     if (teamName) {
-      navigate(`/customers/create?team=${teamName}`);
+      navigate(`/customers/create?team=${teamName.replace(/\s+/g, '_')}`);
     }
   };
 
@@ -138,7 +138,7 @@ const SearchForm = () => {
     const query = new URLSearchParams(location.search);
     const currentTeam = query.get('team');
     if (currentTeam) {
-      navigate(`/business/1/team/${currentTeam}`);
+      navigate(`/business/1/team/${currentTeam.replace(/\s+/g, '_')}`);
     }
   };
 

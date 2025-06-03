@@ -129,12 +129,12 @@ const TeamForm = () => {
 
     const handleViewRecords = () => {
         if (teamDetails) {
-            navigate(`/customers/search?team=${encodeURIComponent(teamDetails.team_name)}`);
+            navigate(`/customers/search?team=${teamDetails.team_name.replace(/\s+/g, '_')}`);
         }
     };
 
     const handleAddRecord = () => {
-        navigate(`/customers/create?team=${encodeURIComponent(teamDetails.team_name)}`);
+        navigate(`/customers/create?team=${teamDetails.team_name.replace(/\s+/g, '_')}`);
     };
 
     const handleMemberEdit = (member) => {
