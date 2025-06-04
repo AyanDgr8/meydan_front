@@ -249,11 +249,10 @@ const Header = () => {
                                 )}
                                 
                                 {/* Brand user menu */}
-                                {userRole === 'brand_user' && (
+                                {(userRole === 'brand_user' || userRole === 'business_admin') && (
                                     <>
                                         <Link to="/business">Business Center Management</Link>
                                         <Link to="/receptionist">Receptionist Management</Link>
-                                        {/* <Link to="/admin">Companies and Users</Link> */}
                                     </>
                                 )}
 

@@ -50,22 +50,29 @@ const TeamForm = () => {
                 
                 // Determine endpoint based on user role
                 let apiEndpoint;
-                if (userData.role === 'receptionist') {
-                    // For receptionists, use the business-center endpoint
-                    const businessCenterId = userData.business_center_id || routeBusinessId;
+                if (userData.role === 'business_admin') {
+                    // For business admin, use their assigned business center ID
+                    const businessCenterId = userData.business_center_id;
                     if (!businessCenterId) {
                         throw new Error('Business center ID not found. Please log in again.');
                     }
-                    apiEndpoint = `${process.env.REACT_APP_API_URL}/business-center/${businessCenterId}/teams`;
-                    console.log('Using business-center endpoint:', apiEndpoint);
-                } else {
-                    // For other roles (brand_user, admin), use the business endpoint
-                    const businessId = routeBusinessId || localStorage.getItem('businessId') || userData.brand_id;
-                    if (!businessId || businessId === 'null') {
-                        throw new Error('Business/Brand ID not found. Please log in again.');
+                    apiEndpoint = `${process.env.REACT_APP_API_URL}/business/${businessCenterId}/teams`;
+                } else if (userData.role === 'brand_user') {
+                    // For brand users, use the business ID from route or localStorage
+                    const businessId = routeBusinessId || localStorage.getItem('businessId');
+                    if (!businessId) {
+                        throw new Error('Business ID not found. Please log in again.');
                     }
                     apiEndpoint = `${process.env.REACT_APP_API_URL}/business/${businessId}/teams`;
-                    console.log('Using business endpoint:', apiEndpoint);
+                } else if (userData.role === 'receptionist') {
+                    // For receptionists, use their assigned business center ID
+                    const businessCenterId = userData.business_center_id;
+                    if (!businessCenterId) {
+                        throw new Error('Business center ID not found. Please log in again.');
+                    }
+                    apiEndpoint = `${process.env.REACT_APP_API_URL}/business/${businessCenterId}/teams`;
+                } else {
+                    throw new Error('Invalid user role');
                 }
                 
                 console.log('Using API endpoint:', apiEndpoint);
@@ -135,6 +142,12 @@ const TeamForm = () => {
 
     const handleAddRecord = () => {
         navigate(`/customers/create?team=${teamDetails.team_name.replace(/\s+/g, '_')}`);
+    };
+    
+    const handleHomeClickk = () => {
+      if (teamDetails) {
+        navigate(`/business/center/${teamDetails.business_center_id}`);
+      }
     };
 
     const handleMemberEdit = (member) => {
@@ -278,13 +291,22 @@ const TeamForm = () => {
     return (
         <div className="team-form-container">
             <div className="team-titlee">
-                <h1 className="team-name">{teamDetails.team_name}</h1>
+                <div className="header-left">
+                    <img 
+                    src="/uploads/house-fill.svg"
+                    className="home-icon"
+                    alt="home icon"
+                    aria-label="Home"
+                    onClick={handleHomeClickk}
+                    />
+                </div>    
+                <h1 className="team-name">{teamDetails.team_name.replace(/_/g, ' ')}</h1>
                 <button className="view-records-btn" onClick={handleViewRecords}>
                     View Records
                 </button>
             </div>
             <div>
-                <strong>PROMPT</strong>
+                {/* <strong>PROMPT</strong> */}
                 <p className="team-prompt">{teamDetails.team_prompt || 'No team prompt available'}</p>
             </div>
 

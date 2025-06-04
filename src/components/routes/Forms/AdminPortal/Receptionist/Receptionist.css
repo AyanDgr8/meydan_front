@@ -179,6 +179,7 @@
     transition: transform 0.3s;
     flex: 0 0 auto;
     width: 300px;
+    border-bottom: 2px solid #1976d2;
 }
 
 .receptionist-card:hover {
@@ -187,6 +188,7 @@
 
 .receptionist-card .receptionist-info h3 {
     color: #EF6F53;
+    border-bottom: 2px solid #1976d2;
     margin: 0 0 10px 0;
     font-size: 18px;
     font-weight: bold;

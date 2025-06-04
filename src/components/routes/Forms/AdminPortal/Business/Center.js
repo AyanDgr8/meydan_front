@@ -713,7 +713,7 @@ const Center = () => {
                             onClick={() => navigate(`/business/${businessId}/team/${team.team_name.replace(/\s+/g, '_')}`)}
                             style={{ cursor: 'pointer' }}
                         >
-                            <h4>{team.team_name}</h4>
+                            <h4>{team.team_name.replace(/_/g, ' ')}</h4>
                             <div className="team-detailss">
                                 <p><strong>Email:</strong> {team.team_email}</p>
                                 <p><strong>Phone:</strong> {team.team_phone}</p>

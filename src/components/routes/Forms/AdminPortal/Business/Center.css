@@ -440,7 +440,7 @@
     display: flex;
     flex-wrap: nowrap;
     gap: 20px;
-    padding: 1px;
+    padding: 5px;
     min-width: min-content;
 }
 
@@ -451,6 +451,7 @@
     padding: 0.25rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease;
+    border-bottom: 2px solid #1976d2;
 }
 
 .team-cardd:hover {
@@ -460,10 +461,10 @@
 
 .team-cardd h4 {
     color: #EF6F53 ;
+    border-bottom: 1px solid #1976d2;
     margin-bottom: 0.5rem;
     font-size: 1rem;
     font-weight: bold;
-    border-bottom: 1px solid #EF6F53;
 }
 
 .team-detailss p {
@@ -487,6 +488,7 @@
     background-color: #f8f9fa;
     margin-top: 0.5rem;
     z-index: 1;
+    margin-bottom: 0.25rem;
 }
 
 .teams-pagination span {

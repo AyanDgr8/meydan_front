@@ -137,7 +137,6 @@ const Login = () => {
                 }
 
                 // Navigate and reload based on role
-                
                 let targetPath = '/brand'; // default path
                 if (userData.role === 'admin') {
                     window.location.reload();
@@ -145,18 +144,22 @@ const Login = () => {
                 } else if (userData.role === 'brand_user') {
                     window.location.reload();
                     targetPath = '/business';
+                } else if (userData.role === 'business_admin') {
+                    // Business admin should see their center in /business page
+                    window.location.reload();
+                    targetPath = '/business';
                 } else if (userData.role === 'receptionist' && userData.business_center_id) {
-                    // Redirect receptionist to their specific business center
+                    // Only receptionists should go to the specific center page
                     window.location.reload();
                     targetPath = `/business/center/${userData.business_center_id}`;
                 }
 
-                // For receptionist, do a full page redirect to their business center
+                // Only do full page redirect for receptionists
                 if (userData.role === 'receptionist' && userData.business_center_id) {
                     window.location.reload();
                     window.location.href = targetPath;
                 } else {
-                    // For other roles, use normal navigation
+                    // For all other roles including business_admin, use normal navigation
                     navigate(targetPath, { replace: true });
                 }
             } else {
@@ -208,10 +211,10 @@ const Login = () => {
                     const userData = JSON.parse(user);
                     if (userData.isAdmin) {
                         navigate('/brand', { replace: true });
-                    } else if (userData.role === 'brand_user') {
+                    } else if (userData.role === 'brand_user' || userData.role === 'business_admin') {
                         navigate('/business', { replace: true });
                     } 
-                    else if (userData.role === 'receptionist') {
+                    else if (userData.role === 'receptionist' ) {
                         navigate(`/business/center/${userData.business_center_id}`, { replace: true });
                     }
                 } else {

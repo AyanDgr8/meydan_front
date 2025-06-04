@@ -48,7 +48,7 @@ const BrandRoute = ({ children }) => {
     if (token) {
         try {
             const tokenData = JSON.parse(atob(token.split('.')[1]));
-            isAdmin = tokenData.role === 'brand_user' || tokenData.role === 'admin';
+            isAdmin = tokenData.role === 'brand_user' || tokenData.role === 'admin' || tokenData.role === 'business_admin';
         } catch (error) {
             console.error('Error parsing token:', error);
         }

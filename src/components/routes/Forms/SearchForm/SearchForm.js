@@ -2,20 +2,30 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./SearchForm.css"; 
 
 const SearchForm = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchResults, setSearchResults] = useState([]);
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(10);
   const [teamName, setTeamName] = useState(''); 
-  const navigate = useNavigate();
-  const location = useLocation();
-
   const [teamMembers, setTeamMembers] = useState([]);
+  const [businessId, setBusinessId] = useState(null);
+
+  // Set businessId from current URL path when component mounts
+  useEffect(() => {
+    // Extract businessId from URL path
+    const pathParts = location.pathname.split('/');
+    const businessIndex = pathParts.indexOf('business');
+    if (businessIndex !== -1 && pathParts[businessIndex + 1]) {
+      setBusinessId(pathParts[businessIndex + 1]);
+    }
+  }, [location.pathname]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -62,75 +72,75 @@ const SearchForm = () => {
     }
   };
 
-  const fetchTeamMembers = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
+  // const fetchTeamMembers = async () => {
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     if (!token) {
+  //       navigate('/login');
+  //       return;
+  //     }
 
-      // Get the team name from the URL query
-      const query = new URLSearchParams(location.search);
-      const teamName = query.get('team');
-      const searchQuery = query.get('query');
+  //     // Get the team name from the URL query
+  //     const query = new URLSearchParams(location.search);
+  //     const teamName = query.get('team');
+  //     const searchQuery = query.get('query');
       
-      // If neither team nor search query exists, clear team members
-      if (!teamName && !searchQuery) {
-        setTeamMembers([]);
-        return;
-      }
+  //     // If neither team nor search query exists, clear team members
+  //     if (!teamName && !searchQuery) {
+  //       setTeamMembers([]);
+  //       return;
+  //     }
 
-      const apiUrl = process.env.REACT_APP_API_URL;
+  //     const apiUrl = process.env.REACT_APP_API_URL;
       
-      // First get the team details to get the team ID
-      const teamsResponse = await axios.get(`${apiUrl}/team/players/teams`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+  //     // First get the team details to get the team ID
+  //     const teamsResponse = await axios.get(`${apiUrl}/team/players/teams`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         'Content-Type': 'application/json'
+  //       }
+  //     });
 
-      // Try to find team by team name or by QUEUE_NAME in search query
-      let team = null;
-      if (teamName) {
-        team = teamsResponse.data.find(t => t.team_name === teamName);
-      } else if (searchQuery) {
-        team = teamsResponse.data.find(t => t.team_name === searchQuery);
-      }
+  //     // Try to find team by team name or by QUEUE_NAME in search query
+  //     let team = null;
+  //     if (teamName) {
+  //       team = teamsResponse.data.find(t => t.team_name === teamName);
+  //     } else if (searchQuery) {
+  //       team = teamsResponse.data.find(t => t.team_name === searchQuery);
+  //     }
 
-      if (!team) {
-        setTeamMembers([]);
-        return;
-      }
+  //     if (!team) {
+  //       setTeamMembers([]);
+  //       return;
+  //     }
 
-      // Then get all users and filter by team ID
-      const usersResponse = await axios.get(`${apiUrl}/players/users`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+  //     // Then get all users and filter by team ID
+  //     const usersResponse = await axios.get(`${apiUrl}/players/users`, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         'Content-Type': 'application/json'
+  //       }
+  //     });
 
-      if (usersResponse.data && usersResponse.data.data) {
-        const teamUsers = usersResponse.data.data.filter(user => user.team_id === team.id);
-        setTeamMembers(teamUsers);
-      }
-    } catch (error) {
-      console.error('Error fetching team members:', error);
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/login');
-      }
-      setTeamMembers([]);
-    }
-  };
+  //     if (usersResponse.data && usersResponse.data.data) {
+  //       const teamUsers = usersResponse.data.data.filter(user => user.team_id === team.id);
+  //       setTeamMembers(teamUsers);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching team members:', error);
+  //     if (error.response?.status === 401) {
+  //       localStorage.removeItem('token');
+  //       navigate('/login');
+  //     }
+  //     setTeamMembers([]);
+  //   }
+  // };
 
   const handleAddRecord = () => {
     const query = new URLSearchParams(location.search);
     const teamName = query.get('team');
     if (teamName) {
-      navigate(`/customers/create?team=${teamName.replace(/\s+/g, '_')}`);
+      navigate(`/customers/create?team=${teamName}`);
     }
   };
 
@@ -138,13 +148,17 @@ const SearchForm = () => {
     const query = new URLSearchParams(location.search);
     const currentTeam = query.get('team');
     if (currentTeam) {
-      navigate(`/business/1/team/${currentTeam.replace(/\s+/g, '_')}`);
+      // Use current businessId or fallback to the one from URL
+      const pathParts = location.pathname.split('/');
+      const businessIndex = pathParts.indexOf('business');
+      const currentBusinessId = businessIndex !== -1 ? pathParts[businessIndex + 1] : '2';
+      navigate(`/business/${currentBusinessId}/team/${currentTeam}`);
     }
   };
 
   useEffect(() => {
     fetchData();
-    fetchTeamMembers();
+    // fetchTeamMembers();
     const query = new URLSearchParams(location.search);
     const team = query.get('team');
     if (team) {
@@ -213,7 +227,7 @@ const SearchForm = () => {
             />
           </div>
           <div className="header-center">
-            <h2 className="list_form_headi">{teamName ? `${teamName} Records` : 'Records'}</h2>
+            <h2 className="list_form_headi">{teamName ? `${teamName.replace(/_/g, ' ')}` : 'Records'}</h2>
           </div>
           <div className="header-right">
             <button className="add-record-btnnn" onClick={handleAddRecord}>

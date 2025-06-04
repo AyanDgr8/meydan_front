@@ -29,11 +29,12 @@
 .team-prompt {
     color: white;
     margin: 0;
+    margin-top: 0.5rem;
     font-size: 1.5rem;
     line-height: 1.75rem;
     background: linear-gradient(135deg, #EF6F53 0%, #e85a3c 100%);
     border-radius: 8px;
-    padding: 0.75rem 1.5rem;
+    padding: 0.5rem;
     box-shadow: 0 2px 4px rgba(239, 111, 83, 0.2);
     transition: all 0.3s ease;
     border: none;
@@ -78,7 +79,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1rem;
-    margin: 0.2rem 0;
+    margin: 0;
 }
 
 .info-section {
@@ -103,7 +104,7 @@
     display: grid;
     grid-template-columns: 140px 1fr;
     gap: 1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.1rem;
     align-items: center;
 }
 
@@ -147,33 +148,39 @@
     gap: 1rem;
     padding: 0.5rem;
     scrollbar-width: thin;
-    scrollbar-color: #EF6F53 #f5f5f5;
+    scrollbar-color: #EF6F53 #CFD8DC;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* Webkit scrollbar styling */
 .members-grid::-webkit-scrollbar {
-    height: 3px;
-    border-radius: 5px;
+    width: 8px;
+    height: 8px;
 }
 
 .members-grid::-webkit-scrollbar-track {
-    background: #f5f5f5;
-    border-radius: 5px;
+    background: #CFD8DC;
+    border-radius: 4px;
 }
 
 .members-grid::-webkit-scrollbar-thumb {
     background-color: #EF6F53;
-    border-radius: 5px;
+    border-radius: 4px;
 }
+
+.members-grid::-webkit-scrollbar-thumb:hover {
+    background-color: #EF6F53;
+}
+
 
 .member-card {
     flex: 0 0 275px; /* Fixed width, no grow, no shrink */
     background: white;
-    padding: 0.1rem;
+    padding: 0.5rem;
     margin-left: 0.2rem;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s;
+    border-bottom: 2px solid #EF6F53;
 }
 
 .member-card:hover {
@@ -189,7 +196,7 @@
 }
 
 .member-details {
-    font-size: 1rem;
+    font-size: 0.8rem;
     text-align: left;
 }
 
@@ -216,7 +223,7 @@
     padding: 1rem;
     background: #fff5f5;
     border-radius: 8px;
-    margin: 2rem auto;
+    margin: auto;
     max-width: 600px;
 }
 
@@ -370,6 +377,14 @@
 .member-actions button:last-child {
     background-color: #dc3545;
     color: white;
+}
+
+.member-actions button:hover {
+    transform: translateX(2px);
+}
+
+.member-actions button:last-child:hover {
+    transform: translateX(2px);
 }
 
 /* Success and Error Messages */
