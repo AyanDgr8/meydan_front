@@ -99,6 +99,20 @@ const Business = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        
+        // Special handling for phone numbers to only allow numbers and + sign at start
+        if (name === 'business_phone' || name === 'business_whatsapp') {
+            // Only allow + at the start and numbers
+            const sanitizedValue = value.replace(/[^\d+]/g, '');
+            // Ensure + only appears at the start
+            const finalValue = sanitizedValue.replace(/\+/g, (match, offset) => offset === 0 ? match : '');
+            setFormData(prev => ({
+                ...prev,
+                [name]: finalValue
+            }));
+            return;
+        }
+
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -109,6 +123,45 @@ const Business = () => {
         e.preventDefault();
         setError('');
         setSuccess('');
+
+        // Validation for business_name and business_person (only alphabets, max 100 chars)
+        const nameRegex = /^[A-Za-z\s]{1,100}$/;
+        if (!nameRegex.test(formData.business_name)) {
+            setError('Business Center name must contain only alphabets and be less than 100 characters');
+            return;
+        }
+        if (!nameRegex.test(formData.business_person)) {
+            setError('Contact person name must contain only alphabets and be less than 100 characters');
+            return;
+        }
+
+        // Validation for phone numbers (numbers only, optional + prefix, max 15 digits)
+        const phoneRegex = /^\+?\d{1,15}$/;
+        if (!phoneRegex.test(formData.business_phone)) {
+            setError('Phone number must contain only numbers (max 15 digits) with an optional + prefix');
+            return;
+        }
+        // if (!phoneRegex.test(formData.business_whatsapp)) {
+        //     setError('WhatsApp number must contain only numbers (max 15 digits) with an optional + prefix');
+        //     return;
+        // }
+
+        // Validation for business_email
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(formData.business_email)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        // Validation for business_tax_id and business_reg_no (max 50 chars)
+        if (formData.business_tax_id.length > 50) {
+            setError('Tax ID must not exceed 50 characters');
+            return;
+        }
+        if (formData.business_reg_no.length > 50) {
+            setError('Registration number must not exceed 50 characters');
+            return;
+        }
 
         try {
             if (!editingBusiness && businesses.length >= brandLimits?.centers) {
@@ -327,6 +380,8 @@ const Business = () => {
                                                 name="business_phone"
                                                 value={formData.business_phone}
                                                 onChange={handleInputChange}
+                                                placeholder="Enter Phone Number"
+                                                pattern="[\+\d]+"
                                                 required
                                             />
                                         </div>

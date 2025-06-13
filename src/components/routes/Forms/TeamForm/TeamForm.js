@@ -136,18 +136,22 @@ const TeamForm = () => {
 
     const handleViewRecords = () => {
         if (teamDetails) {
-            navigate(`/customers/search?team=${teamDetails.team_name.replace(/\s+/g, '_')}`);
+            navigate(`/dashboard/customers/search?team=${teamDetails.team_name.replace(/\s+/g, '_')}`);
         }
     };
 
     const handleAddRecord = () => {
-        navigate(`/customers/create?team=${teamDetails.team_name.replace(/\s+/g, '_')}`);
+        const path = role === 'receptionist'
+          ? `/dashboard/customers/create?team=${teamDetails.team_name.replace(/\s+/g, '_')}`
+          : `/customers/create?team=${teamDetails.team_name.replace(/\s+/g, '_')}`;
+        navigate(path);
     };
     
     const handleHomeClickk = () => {
-      if (teamDetails) {
-        navigate(`/business/center/${teamDetails.business_center_id}`);
-      }
+        const path = role === 'receptionist'
+            ? `/dashboard/business/center/${teamDetails.business_center_id}`
+            : `/business/center/${teamDetails.business_center_id}`;
+        navigate(path);
     };
 
     const handleMemberEdit = (member) => {
@@ -314,31 +318,32 @@ const TeamForm = () => {
                 <div className="info-section">
                     <h2>Company Details</h2>
                     <div className="detail-item">
-                        <label>Phone No:</label>
-                        <span>{teamDetails.team_phone || 'N/A'}</span>
+                        <span className='info_pair'>
+                            <label>Phone No:</label>
+                            <span>{teamDetails.team_phone || 'N/A'}</span>
+                        </span>
+                        <span className='info_pair'>
+                            <label>Email:</label>
+                            <span>{teamDetails.team_email || 'N/A'}</span>
+                        </span>
                     </div>
                     <div className="detail-item">
-                        <label>Email:</label>
-                        <span>{teamDetails.team_email || 'N/A'}</span>
+                        <span className='info_pair'>
+                            <label>Registration No:</label>
+                            <span>{teamDetails.reg_no || 'N/A'}</span>
+                        </span>
+                        <span className='info_pair'>
+                            <label>Tax ID:</label>
+                            <span>{teamDetails.tax_id || 'N/A'}</span>
+                        </span>
                     </div>
                     <div className="detail-item">
-                        <label>Registration No:</label>
-                        <span>{teamDetails.reg_no || 'N/A'}</span>
-                    </div>
-                    <div className="detail-item">
-                        <label>Tax ID:</label>
-                        <span>{teamDetails.tax_id || 'N/A'}</span>
-                    </div>
-                    <div className="detail-item">
-                        <label>Address:</label>
-                        <span>{teamDetails.team_address || 'N/A'}</span>
-                    </div>
-                    <div className="detail-item">
-                        <label>Country:</label>
-                        <span>{teamDetails.team_country || 'N/A'}</span>
+                        <span className='info_pair'>
+                            <label>Address:</label>
+                            <span>{teamDetails.team_address || 'N/A'}, {teamDetails.team_country || 'N/A'}</span>
+                        </span>
                     </div>
                 </div>
-
                 <div className="info-section">
                     <h2>Company Description</h2>
                     <p className="team-detail">{teamDetails.team_detail || 'No description available'}</p>

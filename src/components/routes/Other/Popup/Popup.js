@@ -49,11 +49,10 @@ const Popup = () => {
                 >
                     <div className="popup-content">
                         <div className="customer-details">
-                            <p><strong>Name:</strong> {message.customer?.first_name} {message.customer?.middle_name || ''} {message.customer?.last_name}</p>
+                            <p><strong>Name:</strong> {message.customer?.customer_name} </p>
                             <p><strong>Phone:</strong> {message.customer?.phone_no_primary}</p>
-                            <p><strong>Agent:</strong> {message.customer?.agent_name || 'Not Assigned'}</p>
                             {message.customer?.team_name && (
-                                <p><strong>Team:</strong> {message.customer?.team_name}</p>
+                                <p><strong>Company:</strong> {message.customer?.team_name}</p>
                             )}
                         </div>
                         {message.minutesUntil && (

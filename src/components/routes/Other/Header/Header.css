@@ -23,10 +23,12 @@
     height: 3.25rem;
     width: auto;
     cursor: pointer;
+    transition: transform 0.2s ease;
 }
 
+
 .header-container > .logo {
-    cursor: default;
+    cursor: pointer;
 }
 
 .header-right {

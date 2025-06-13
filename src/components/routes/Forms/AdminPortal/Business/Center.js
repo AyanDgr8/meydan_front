@@ -710,7 +710,12 @@ const Center = () => {
                         <div 
                             key={team.id} 
                             className="team-cardd"
-                            onClick={() => navigate(`/business/${businessId}/team/${team.team_name.replace(/\s+/g, '_')}`)}
+                            onClick={() => {
+                                const path = role === 'receptionist' 
+                                    ? `/dashboard/business/${businessId}/team/${team.team_name.replace(/\s+/g, '_')}`
+                                    : `/business/${businessId}/team/${team.team_name.replace(/\s+/g, '_')}`;
+                                navigate(path);
+                            }}
                             style={{ cursor: 'pointer' }}
                         >
                             <h4>{team.team_name.replace(/_/g, ' ')}</h4>

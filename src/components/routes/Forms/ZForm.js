@@ -22,6 +22,8 @@ import Business from "./AdminPortal/Business/Business";
 import Brand from "./AdminPortal/Brand/Brand";
 import Receptionist from "./AdminPortal/Receptionist/Receptionist";
 import Center from "./AdminPortal/Business/Center";
+import Dashboard from "../Dashboard/Dashboard";
+// import FirstReception from "../Dashboard/FirstReception";
 
 // AdminRoute component to protect admin-only routes
 const AdminRoute = ({ children }) => {
@@ -40,7 +42,7 @@ const AdminRoute = ({ children }) => {
     return isAdmin ? children : <Navigate to="/login" replace />;
 };
 
-// AdminRoute component to protect admin-only routes
+// BrandRoute component to protect brand-level routes
 const BrandRoute = ({ children }) => {
     const token = localStorage.getItem('token');
     let isAdmin = false;
@@ -53,10 +55,26 @@ const BrandRoute = ({ children }) => {
             console.error('Error parsing token:', error);
         }
     }
-    
+    console.log("isAdmin:", isAdmin);
     return isAdmin ? children : <Navigate to="/login" replace />;
 };
 
+// ReceptionistRoute component to protect receptionist routes
+const ReceptionistRoute = ({ children }) => {
+    const token = localStorage.getItem('token');
+    let isReceptionist = false;
+    
+    if (token) {
+        try {
+            const tokenData = JSON.parse(atob(token.split('.')[1]));
+            isReceptionist = tokenData.role === 'receptionist';
+        } catch (error) {
+            console.error('Error parsing token:', error);
+        }
+    }
+    console.log("isReceptionist:", isReceptionist);
+    return isReceptionist ? children : <Navigate to="/login" replace />;
+};
 
 const ZForm = () => {
     return (
@@ -95,9 +113,14 @@ const ZForm = () => {
             
             {/* Receptionist Routes */}
             <Route path="/receptionist" element={
-                <BrandRoute>
-                    <Receptionist />
-                </BrandRoute>
+                <ReceptionistRoute />
+            } />
+
+            {/* Dashboard */}
+            <Route path="/dashboard/*" element={
+                <ReceptionistRoute>
+                    <Dashboard />
+                </ReceptionistRoute>
             } />
 
             {/* Search for a customer */}
@@ -153,6 +176,10 @@ const ZForm = () => {
 
             {/* Approve user route */}
             <Route path="/approve-user/:token" element={<ApproveUser />} />
+            
+            {/* Dashboard routes */}
+            <Route path="/dashboard/team/:teamName/:phone_no_primary" element={<UseForm />} />
+            <Route path="/dashboard/customer/:id" element={<UseForm />} />
             {/* ********************************* */}
         </Routes>
     );

@@ -146,15 +146,21 @@ const Header = () => {
         navigate('/customers/reminders');
     };
 
+    const handleLogoClick = () => {
+        navigate('/dashboard/first-reception');
+    };
+
     return (
         <div className="header-container">
             {isLoggedIn ? (
-                        <img 
-                            src="/uploads/logo.webp"
-                            className="logo"
-                            alt="Company Logo"
+                <div className="logo-container" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+                    <img 
+                        src="/uploads/logo.webp"
+                        className="logo"
+                        alt="Company Logo"
                         aria-label="Logo"
-                        />
+                    />
+                </div>
             ) : (
                 <img 
                     src="/uploads/logo.webp"

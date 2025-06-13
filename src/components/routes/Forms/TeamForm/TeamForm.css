@@ -1,26 +1,25 @@
 /* src/components/routes/Forms/TeamForm/TeamForm.css */
 
 .team-form-container {
-    max-width: 70%;
-    margin: 0 auto;
+    margin: auto;
     font-family: 'Arial', sans-serif;
+    width: 95%;
 }
 
 .team-titlee {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
     position: relative;
-    padding: 1rem 0;
+    padding: 0.5rem 0;
     margin: 0;
 }
 
 .team-name {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    margin: 0;
+    /* position: absolute; */
+    /* left: 50%; */
+    /* transform: translateX(-50%); */
+    margin: auto;
     color: #364C63;
     font-size: 1.5rem;
     z-index: 0;
@@ -29,7 +28,6 @@
 .team-prompt {
     color: white;
     margin: 0;
-    margin-top: 0.5rem;
     font-size: 1.5rem;
     line-height: 1.75rem;
     background: linear-gradient(135deg, #EF6F53 0%, #e85a3c 100%);
@@ -59,7 +57,6 @@
 }
 
 .view-records-btn {
-    margin-left: auto;
     padding: 0.2rem 0.8rem;
     font-size: 0.8rem;
     background-color: #364C63;
@@ -77,7 +74,7 @@
 
 .team-info {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 1rem;
     margin: 0;
 }
@@ -101,30 +98,36 @@
 }
 
 .detail-item {
-    display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: 1rem;
-    margin-bottom: 0.1rem;
+    display: flex;
+    margin-bottom: 0.5rem;
     align-items: center;
 }
 
-.detail-item label {
-    color: #364C63;
-    font-weight: 600;
-    text-align: right;
-    font-size: 0.9rem;
+.info_pair {
+    display: flex;
+    align-items: center;
+    flex: 1;
 }
 
-.detail-item span {
+.info_pair label {
     color: #364C63;
+    font-weight: 800;
     text-align: left;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+}
+
+.info_pair span {
+    color: #7c8084;
+    text-align: left;
+    font-size: 0.8rem;
+    flex: 1;
+    margin-left: 0.5rem;
 }
 
 .team-detail {
     color: #364C63;
     text-align: justify;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 .team-memberss {

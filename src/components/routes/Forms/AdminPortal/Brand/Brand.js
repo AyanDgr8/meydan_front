@@ -84,6 +84,20 @@ const Brand = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        
+        // Special handling for brand_phone to only allow numbers and + sign at start
+        if (name === 'brand_phone') {
+            // Only allow + at the start and numbers
+            const sanitizedValue = value.replace(/[^\d+]/g, '');
+            // Ensure + only appears at the start
+            const finalValue = sanitizedValue.replace(/\+/g, (match, offset) => offset === 0 ? match : '');
+            setFormData(prev => ({
+                ...prev,
+                [name]: finalValue
+            }));
+            return;
+        }
+
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -94,6 +108,41 @@ const Brand = () => {
         e.preventDefault();
         setError('');
         setSuccess('');
+
+        // Validation for brand_name and brand_person (only alphabets, max 100 chars)
+        const nameRegex = /^[A-Za-z\s]{1,100}$/;
+        if (!nameRegex.test(formData.brand_name)) {
+            setError('Brand Center Group name must contain only alphabets and be less than 100 characters');
+            return;
+        }
+        if (!nameRegex.test(formData.brand_person)) {
+            setError('Contact person name must contain only alphabets and be less than 100 characters');
+            return;
+        }
+
+        // Validation for brand_phone (numbers only, optional + prefix, max 15 digits)
+        const phoneRegex = /^\+?\d{1,15}$/;
+        if (!phoneRegex.test(formData.brand_phone)) {
+            setError('Phone number must contain only numbers (max 15 digits) with an optional + prefix');
+            return;
+        }
+
+        // Validation for brand_email
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(formData.brand_email)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        // Validation for brand_tax_id and brand_reg_no (max 50 chars)
+        if (formData.brand_tax_id.length > 50) {
+            setError('Tax ID must not exceed 50 characters');
+            return;
+        }
+        if (formData.brand_reg_no.length > 50) {
+            setError('Registration number must not exceed 50 characters');
+            return;
+        }
 
         try {
             const token = localStorage.getItem('token');
@@ -290,6 +339,7 @@ const Brand = () => {
                                     value={formData.brand_person}
                                     onChange={handleInputChange}
                                     placeholder="Enter Contact Person Name"
+                                    required
                                 />
                             </div>
                         </div>
@@ -308,6 +358,7 @@ const Brand = () => {
                                     value={formData.brand_email}
                                     onChange={handleInputChange}
                                     placeholder="Enter Email"
+                                    required
                                 />
                             </div>
                         </div>
@@ -365,11 +416,14 @@ const Brand = () => {
                             <label htmlFor="brand_phone">Phone :</label>
                             <div className="input-container">
                                 <input
-                                    type="text"
+                                    type="tel"
                                     id="brand_phone"
                                     name="brand_phone"
                                     value={formData.brand_phone}
                                     onChange={handleInputChange}
+                                    placeholder="Enter Phone Number"
+                                    pattern="[\+\d]+"
+                                    required
                                 />
                             </div>
                         </div>
@@ -414,6 +468,7 @@ const Brand = () => {
                                     name="centers"
                                     value={formData.centers}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
                         </div>
@@ -426,6 +481,7 @@ const Brand = () => {
                                     name="companies"
                                     value={formData.companies}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
                         </div>
@@ -438,6 +494,7 @@ const Brand = () => {
                                     name="associates"
                                     value={formData.associates}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
                         </div>
@@ -450,6 +507,7 @@ const Brand = () => {
                                     name="receptionist"
                                     value={formData.receptionist}
                                     onChange={handleInputChange}
+                                    required
                                 />
                             </div>
                         </div>

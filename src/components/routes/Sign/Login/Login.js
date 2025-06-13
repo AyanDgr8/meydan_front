@@ -150,11 +150,11 @@ const Login = () => {
                     targetPath = '/business';
                 } else if (userData.role === 'receptionist' && userData.business_center_id) {
                     // Only receptionists should go to the specific center page
-                    window.location.reload();
-                    targetPath = `/business/center/${userData.business_center_id}`;
+                    // targetPath = `/dashboard/business/center/${userData.business_center_id}`;
+                    targetPath = `/dashboard/first-reception`;
                 }
 
-                // Only do full page redirect for receptionists
+                // Navigate to target path
                 if (userData.role === 'receptionist' && userData.business_center_id) {
                     window.location.reload();
                     window.location.href = targetPath;
@@ -215,7 +215,8 @@ const Login = () => {
                         navigate('/business', { replace: true });
                     } 
                     else if (userData.role === 'receptionist' ) {
-                        navigate(`/business/center/${userData.business_center_id}`, { replace: true });
+                        navigate(`/dashboard/first-reception`, { replace: true });
+                        // navigate(`/dashboard/business/center/${userData.business_center_id}`, { replace: true });
                     }
                 } else {
                     // Clear expired session

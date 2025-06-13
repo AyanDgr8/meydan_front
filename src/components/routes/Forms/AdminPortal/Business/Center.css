@@ -2,13 +2,12 @@
 
 .business-center-container {
     padding: 20px;
-    max-width: 1200px;
     margin: 0 auto;
 }
 
 .center-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 15px;
@@ -21,7 +20,9 @@
     font-size: 28px;
     text-transform: uppercase;
     position: relative;
+    text-align: center;
     padding-bottom: 8px;
+    margin-bottom: 15px;
 }
 
 .center-header h2::after {
@@ -35,8 +36,8 @@
         to right,
         #EF6F53 0%,
         #EF6F53 40%,
-        #0b4267 40%,
-        #0b4267 60%,
+        #1976d2 40%,
+        #1976d2 60%,
         #EF6F53 60%,
         #EF6F53 100%
     );

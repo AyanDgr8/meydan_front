@@ -1,17 +1,16 @@
 // src/components/routes/Forms/UseForm/UseForm.js
 
 import React, { useEffect, useState, useRef } from "react";
-import { useLocation, useNavigate, useParams, Link } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "./UseForm.css";
-import LastChanges from "../LastChange/LastChange";
 import EditIcon from '@mui/icons-material/Edit';  // Import edit icon
 import { jwtDecode } from 'jwt-decode'; // Import as named export
 
 const UseForm = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { phone_no_primary } = useParams();
+    const { id, teamName, phone_no_primary } = useParams();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [hasDeletePermission, setHasDeletePermission] = useState(false);
@@ -19,33 +18,52 @@ const UseForm = () => {
     const [customer, setCustomer] = useState(null);
     const [availableAgents, setAvailableAgents] = useState([]); 
     const [editingInfo, setEditingInfo] = useState(false);
-    const alertShownRef = useRef(false); // Use a ref to track if the alert has been shown
+    const alertShownRef = useRef(false);
 
-    const [formData, setFormData] = useState({
-        customer_name: '',
-        phone_no_primary: '',
-        phone_no_secondary: '',
-        email_id: '',
-        address: '',
-        country: '',
-        designation: '',
-        disposition: '',
-        C_unique_id: '',
-        agent_name: '',
-        comment: '',
-        scheduled_at: '',
-        first_name: '',
-        middle_name: '',
-        last_name: '',
-        whatsapp_num: '',
-        date_of_birth: '',
-        company_name: '',
-        website: '',
-        other_location: '',
-        contact_type: '',
-        source: '',
-        QUEUE_NAME: '',
-        gender: ''
+    // Get team name from URL params or state
+    const teamNameFromURL = location.pathname.split('/')[2];
+    const queueNameFromState = location.state?.queueName;
+    const teamNameFromStorage = localStorage.getItem('currentQueue');
+    
+    // Initialize form data with customer data from state if available
+    const [formData, setFormData] = useState(() => {
+        const initialState = {
+            customer_name: '',
+            phone_no_primary: '',
+            phone_no_secondary: '',
+            email_id: '',
+            address: '',
+            country: '',
+            designation: '',
+            disposition: '',
+            C_unique_id: '',
+            agent_name: '',
+            comment: '',
+            scheduled_at: '',
+            first_name: '',
+            middle_name: '',
+            last_name: '',
+            whatsapp_num: '',
+            date_of_birth: '',
+            company_name: '',
+            website: '',
+            other_location: '',
+            contact_type: '',
+            source: '',
+            QUEUE_NAME: '',
+            gender: ''
+        };
+
+        // If we have customer data from state, use it to initialize
+        const locationState = location.state;
+        if (locationState?.customer) {
+            return {
+                ...initialState,
+                ...locationState.customer,
+                QUEUE_NAME: locationState.queueName || teamNameFromURL || queueNameFromState || teamNameFromStorage
+            };
+        }
+        return initialState;
     });
 
     const [updatedData, setUpdatedData] = useState(formData);
@@ -66,6 +84,49 @@ const UseForm = () => {
         setFormData(prev => ({ ...prev, [name]: processedValue }));
         setUpdatedData(prev => ({ ...prev, [name]: processedValue }));
     };
+
+    useEffect(() => {
+        const fetchCustomerData = async () => {
+            try {
+                setLoading(true);
+                let response;
+                const apiUrl = process.env.REACT_APP_API_URL;
+
+                if (phone_no_primary) {
+                    response = await axios.get(`${apiUrl}/customers/phone/${phone_no_primary}`);
+                } else if (id) {
+                    response = await axios.get(`${apiUrl}/customers/${id}`);
+                }
+
+                if (response && response.data) {
+                    setCustomer(response.data);
+                    setFormData(prev => ({
+                        ...prev,
+                        ...response.data
+                    }));
+                }
+            } catch (error) {
+                console.error('Error fetching customer data:', error);
+                setError('Failed to load customer data. The record may not exist.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const locationState = location.state;
+        if (locationState?.customer) {
+            setCustomer(locationState.customer);
+            setFormData(prev => ({
+                ...prev,
+                ...locationState.customer
+            }));
+            setLoading(false);
+        } else if (phone_no_primary || id) {
+            fetchCustomerData();
+        } else {
+            setLoading(false);
+        }
+    }, [id, phone_no_primary, location.state, teamNameFromURL, queueNameFromState, teamNameFromStorage]);
 
     const validateRequiredFields = () => {
         const requiredFields = ['customer_name', 'email_id', 'phone_no_primary'];
@@ -175,251 +236,34 @@ const UseForm = () => {
         }
     };
 
-    const fetchCustomerData = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                navigate('/admin');
-                return;
-            }
-
-            // Get phone number and team name from URL
-            const pathParts = location.pathname.split('/');
-            const teamName = pathParts[2];
-            const phoneNumber = pathParts[3];
-            
-            if (!phoneNumber || !teamName) {
-                setError('Phone number or team name not found');
-                setLoading(false);
-                return;
-            }
-
-            // First try to get customer data from location state
-            const locationState = location.state;
-            if (locationState?.customer) {
-                setCustomer(locationState.customer);
-                setFormData(prev => ({
-                    ...prev,
-                    ...locationState.customer,
-                    QUEUE_NAME: locationState.queueName || prev.QUEUE_NAME
-                }));
-                setLoading(false);
-                return;
-            }
-
-            // If no state data, fetch from API using the team-specific endpoint
-            const apiUrl = process.env.REACT_APP_API_URL;
-            try {
-                const response = await axios.get(`${apiUrl}/team/${teamName}/${phoneNumber}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.data?.exists && response.data?.customer) {
-                    const customerData = response.data.customer;
-                    setCustomer(customerData);
-                    setFormData(prev => ({
-                        ...prev,
-                        ...customerData,
-                        QUEUE_NAME: teamName
-                    }));
-                } else {
-                    // If customer data is not found, redirect to team page
-                    navigate(`/team/${teamName}`);
-                    return;
-                }
-            } catch (error) {
-                // If customer not found (404), redirect to team page
-                if (error.response?.status === 404) {
-                    navigate(`/team/${teamName}`);
-                    return;
-                }
-                throw error; // Re-throw other errors to be caught by outer catch block
-            }
-            
-        } catch (error) {
-            console.error('Error fetching customer data:', error);
-            // For any other errors, redirect to team page
-            const teamName = location.pathname.split('/')[2];
-            navigate(`/team/${teamName}`);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchData = async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                navigate('/admin');
-                return;
-            }
-
-            try {
-                // Verify token is valid
-                const decodedToken = jwtDecode(token);
-                if (!decodedToken || !decodedToken.exp || Date.now() >= decodedToken.exp * 1000) {
-                    localStorage.removeItem('token');
-                    navigate('/admin');
-                    return;
-                }
-                setUser(decodedToken);
-                setHasDeletePermission(decodedToken.role === 'admin');
-            } catch (e) {
-                console.error('Invalid token:', e);
-                localStorage.removeItem('token');
-                navigate('/admin');
-                return;
-            }
-
-            // Get team name from URL params first, then fallback to other sources
-            const teamName = location.pathname.split('/')[2]; // Assuming URL pattern: /team/{teamName}/{phone}
-
-            if (!teamName) {
-                setError('Team name not found');
-                setLoading(false);
-                return;
-            }
-
-            // Store the team name in state and localStorage
-            setFormData(prev => ({ ...prev, QUEUE_NAME: teamName }));
-            localStorage.setItem('currentQueue', teamName);
-
-            await fetchCustomerData();
-
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            setError(error.message || 'Error fetching data');
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, [navigate, phone_no_primary, location.state]);
-
-    useEffect(() => {
-        if (customer) {
-            // Format phone numbers for display when loading data
-            const displayData = { ...customer };
-            Object.keys(displayData).forEach(key => {
-                if (key.includes('phone') && displayData[key]) {
-                    displayData[key] = formatPhoneForDisplay(displayData[key]);
-                }
-            });
-            setFormData(displayData);
-        }
-    }, [customer]);
-
-    const handleDelete = async () => {
-        if (!hasDeletePermission) {
-            alert("You do not have permission to delete customers.");
-            return;
-        }
-        const confirmDelete = window.confirm("Are you sure you want to delete this customer?");
-        if (!confirmDelete) return;
-
-        try {
-            const token = localStorage.getItem('token');
-            const apiUrl = process.env.REACT_APP_API_URL;
-
-            await axios.delete(`${apiUrl}/customers/${customer.id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            alert("Customer deleted successfully.");
-            navigate(`/customers/phone/${customer.phone_no_primary}`);
-        } catch (error) {
-            if (error.response && error.response.status === 403) {
-                alert("You do not have permission to delete customers.");
-                // Refresh user data to get latest permissions
-                const fetchUser = async () => {
-                    try {
-                        const token = localStorage.getItem('token');
-                        const apiUrl = process.env.REACT_APP_API_URL;
-
-                        // First get the current user's data
-                        const userResponse = await axios.get(`${apiUrl}/current-user`, {
-                            headers: {
-                                Authorization: `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-                        setUser(userResponse.data);
-                        
-                        // Get permissions from API response only
-                        const permissions = userResponse.data.permissions || [];
-                        console.log('Latest user permissions from API:', permissions);
-                        
-                        // Check if delete_customer permission exists in the array
-                        const hasDeletePerm = Array.isArray(permissions) && permissions.includes('delete_customer');
-                        console.log('Has delete permission:', hasDeletePerm);
-                        setHasDeletePermission(hasDeletePerm);
-
-                        // Then get the available agents based on user's role
-                        try {
-                            const agentsResponse = await axios.get(`${apiUrl}/players/teams`, {
-                                headers: {
-                                    Authorization: `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-                            setAvailableAgents(agentsResponse.data);
-                        } catch (error) {
-                            console.error('Error fetching available agents:', error);
-                            setError('Failed to fetch available agents');
-                        }
-
-                    } catch (error) {
-                        console.error('Error in fetchUser:', error);
-                        setError('Failed to fetch user data');
-                        setLoading(false);
-                    }
-                };
-                await fetchUser();
-            } else {
-                console.error("Error deleting customer:", error);
-                alert("Failed to delete customer. Please try again.");
-            }
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+        setLoading(true);
+        setError(null);
+
+        // Get team name from various sources
+        const teamName = formData.QUEUE_NAME || teamNameFromURL || queueNameFromState || teamNameFromStorage;
+        if (!teamName) {
+            setError('Team name not found. Please try refreshing the page.');
+            setLoading(false);
+            return;
+        }
+
         // First validate required fields
         const requiredFields = {
             'customer_name': 'Customer Name',
             'phone_no_primary': 'Primary Phone Number',
-            'email_id': 'Email'
+            'email_id': 'Email ID',
+            'address': 'Address'
         };
 
         const missingFields = Object.entries(requiredFields)
-            .filter(([field]) => !formData[field] || !formData[field].trim())
+            .filter(([field, label]) => !formData[field])
             .map(([_, label]) => label);
 
         if (missingFields.length > 0) {
             alert(`Please fill in the following mandatory details:\n• ${missingFields.join('\n• ')}`);
-            return;
-        }
-
-        // Check if any fields have actually changed
-        const changedFields = {};
-        Object.keys(formData).forEach(key => {
-            if (formData[key] !== customer[key]) {
-                changedFields[key] = formData[key];
-            }
-        });
-
-        // If no fields changed, return early without making API call
-        if (Object.keys(changedFields).length === 0) {
-            navigate(`/team/${formData.QUEUE_NAME}`);
+            setLoading(false);
             return;
         }
 
@@ -427,51 +271,107 @@ const UseForm = () => {
         const phoneLength = formData.phone_no_primary.replace('+', '').length;
         if (phoneLength < 8) {
             alert('Primary phone number must be at least 8 digits');
+            setLoading(false);
+            return;
+        }
+
+        if (!customer) {
+            setError('Customer data not loaded. Please try refreshing the page.');
+            setLoading(false);
             return;
         }
 
         try {
             const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Authentication token not found');
+                navigate('/login');
+                return;
+            }
+
             const apiUrl = process.env.REACT_APP_API_URL;
             
-            // Update customer data - only send changed fields
+            // Get changed fields - only compare fields that exist in both objects
+            const changedFields = {};
+            const commonFields = Object.keys(formData).filter(field => customer.hasOwnProperty(field));
+            
+            commonFields.forEach(key => {
+                if (formData[key] !== customer[key]) {
+                    changedFields[key] = formData[key];
+                }
+            });
+
+            // If no fields changed, return early without making API call
+            if (Object.keys(changedFields).length === 0) {
+                console.log('No changes detected, skipping update');
+                if (teamName) {
+                    navigate(`/dashboard/customers/search?team=${teamName}`);
+                }
+                setLoading(false);
+                return;
+            }
+
+            // Prepare update data with team name
+            const updateData = {
+                ...changedFields,
+                QUEUE_NAME: teamName
+            };
+
+            console.log('Update request data:', {
+                url: `${apiUrl}/customers/${customer.id}`, // Use the customer's _id
+                data: updateData,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
             const response = await axios.put(
-                `${apiUrl}/customers/${customer.id}`, 
-                changedFields,
+                `${apiUrl}/customers/${customer.id}`, // Use the customer's _id
+                updateData,
                 {
-                    headers: { 
+                    headers: {
                         Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
+                        'Content-Type': 'application/json'
+                    }
                 }
             );
 
-            setCustomer(formData);
-            setFormData(formData);
-            
-            // Get the team name from either the URL params, form data, or localStorage
-            const teamName = formData.QUEUE_NAME || location.state?.queueName || localStorage.getItem('currentQueue');
-            
-            // Navigate to the team page
-            if (teamName) {
-                navigate(`/team/${teamName}`);
+            if (response.data) {
+                setCustomer(response.data);
+                setFormData(response.data);
+                
+                // Navigate to the team page
+                if (teamName) {
+                    navigate(`/dashboard/customers/search?team=${teamName}`);
+                } else {
+                    console.warn('No team name found for navigation');
+                }
             } else {
-                console.warn('No team name found for navigation');
-                navigate('/customers/search'); // Fallback to search page if no team name
+                throw new Error('Invalid response from server');
             }
+
         } catch (error) {
-            console.error('Update error:', error);
-            const backendErrors = error.response?.data?.errors;
-            if (backendErrors) {
-                alert(`Update failed: ${backendErrors.join('\n')}`);
+            console.error('Update error details:', {
+                message: error.message,
+                status: error.response?.status,
+                data: error.response?.data,
+                config: error.config
+            });
+
+            if (error.response?.data?.details) {
+                setError(error.response.data.details);
+            } else if (error.response?.data?.error) {
+                setError(error.response.data.error);
             } else {
-                alert('Failed to update customer. Please try again.');
+                setError('Failed to update customer. Please try again.');
             }
+            setLoading(false);
         }
     };
-    
+
     if (loading) return <div>Loading customer data...</div>;
-    if (error) return <div>{error}</div>;
+    if (error) return <div className="error-message">{error}</div>;
 
     return (
         <div>
@@ -530,7 +430,7 @@ const UseForm = () => {
                                     label: "Designation", name: "designation"
                                 },
                                 { 
-                                    label: "Queue Name", name: "QUEUE_NAME", disabled: true
+                                    label: "Company", name: "QUEUE_NAME", disabled: true
                                 }
                             ].map(({ label, name, type = "text", disabled, maxLength, required, pattern }) => (
                                 <div key={name} className="label-inputt">
@@ -611,7 +511,7 @@ const UseForm = () => {
 
                         <button className="sbt-use-btn" type="submit">Update</button>
                     </form>
-                    {hasDeletePermission && (  
+                    {/* {hasDeletePermission && (  
                         <button 
                             onClick={handleDelete} 
                             className="add-field-btnnn"
@@ -619,7 +519,7 @@ const UseForm = () => {
                         >
                             Delete Record
                         </button>
-                    )}
+                    )} */}
                 </div>
 
                 {/* <div>

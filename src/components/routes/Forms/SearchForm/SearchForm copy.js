@@ -122,13 +122,30 @@ const SearchForm = () => {
   const handleEdit = (customer) => {
     const query = new URLSearchParams(location.search);
     const teamName = query.get('team') || localStorage.getItem('currentQueue');
-    navigate(`/dashboard/team/${teamName}/${customer.phone_no_primary}`, {
+    navigate(`/team/${teamName}/${customer.phone_no_primary}`, {
       state: {
         customer,
         queueName: teamName
       }
     });
   };
+
+  // const handleSelect = (C_unique_id) => {
+  //   setSelectedRecords(prev => {
+  //     if (prev.includes(C_unique_id)) {
+  //       return prev.filter(id => id !== C_unique_id);
+  //     }
+  //     return [...prev, C_unique_id];
+  //   });
+  // };
+
+  // const handleSelectAll = () => {
+  //   if (selectedRecords.length === searchResults.length) {
+  //     setSelectedRecords([]);
+  //   } else {
+  //     setSelectedRecords(searchResults.map(record => record.C_unique_id));
+  //   }
+  // };
 
   const formatDateTime = (dateString) => {
     if (!dateString) return 'N/A';

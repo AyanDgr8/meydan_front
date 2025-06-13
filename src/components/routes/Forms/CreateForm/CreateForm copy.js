@@ -175,28 +175,9 @@ const CreateForm = () => {
         return;
       }
 
-      // Get username from token
-      let username;
-      try {
-        const tokenData = JSON.parse(atob(token.split('.')[1]));
-        username = tokenData.username;
-        if (!username) {
-          throw new Error('Username not found in token');
-        }
-      } catch (err) {
-        console.error('Error getting username from token:', err);
-        setError('Authentication error. Please log in again.');
-        return;
-      }
-
-      // Add username to form data
-      const dataToSend = {
-        ...formData
-      };
-
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/customers/create`,
-        dataToSend,
+        formData,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -250,7 +231,7 @@ const CreateForm = () => {
 
           setFormSuccess(true);
           setTimeout(() => {
-            navigate(`/dashboard/customers/search?team=${formData.QUEUE_NAME.replace(/\s+/g, '_')}`);
+            navigate(`/customers/search?team=${formData.QUEUE_NAME.replace(/\s+/g, '_')}`);
           }, 2000);
 
         } catch (notificationError) {
@@ -258,7 +239,7 @@ const CreateForm = () => {
           setFormSuccess(true);
           setError('Record created successfully, but notifications could not be sent');
           setTimeout(() => {
-            navigate(`/dashboard/customers/search?team=${formData.QUEUE_NAME.replace(/\s+/g, '_')}`);
+            navigate(`/customers/search?team=${formData.QUEUE_NAME.replace(/\s+/g, '_')}`);
           }, 2000);
         }
       }
@@ -273,6 +254,24 @@ const CreateForm = () => {
     }
   };
 
+  const resetForm = () => {
+    const currentPhone = formData.phone_no_primary;
+    const currentTeam = formData.QUEUE_NAME;
+    setFormData({
+      customer_name: '',
+      phone_no_primary: currentPhone, // Keep the phone number
+      phone_no_secondary: '',
+      email_id: '',
+      address: '',
+      country: '',
+      disposition: '',
+      QUEUE_NAME: currentTeam, // Keep the team
+      comment: '',
+      scheduled_at: '',
+      designation: ''
+    });
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -285,7 +284,7 @@ const CreateForm = () => {
           <div className="form-section">
             <div className="form-section-title">Basic Information</div>
             <div className="form-row">
-              <div className="labell-input ">
+              <div className="label-input ">
                 <label>Phone Number<span className="required"> *</span>:</label>
                 <input
                   type="tel"
@@ -297,7 +296,7 @@ const CreateForm = () => {
                 />
               </div>
               
-              <div className="labell-input customer-field">
+              <div className="label-input customer-field">
                 <label>Customer Name<span className="required"> *</span>:</label>
                 <input
                   type="text"
@@ -309,7 +308,7 @@ const CreateForm = () => {
               </div>
             </div>
             <div className="form-row">
-              <div className="labell-input">
+              <div className="label-input">
                 <label>Email:</label>
                 <input
                   type="email"
@@ -318,7 +317,7 @@ const CreateForm = () => {
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="labell-input">
+              <div className="label-input">
                 <label>Alternative Number:</label>
                 <input
                   type="text"
@@ -335,7 +334,7 @@ const CreateForm = () => {
             
             {/* First row: Address and Country */}
             <div className="form-row">
-              <div className="labell-input">
+              <div className="label-input">
                 <label>Address:</label>
                 <input 
                   type="text"
@@ -344,7 +343,7 @@ const CreateForm = () => {
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="labell-input">
+              <div className="label-input">
                 <label>Country:</label>
                 <input
                   type="text"
@@ -357,7 +356,7 @@ const CreateForm = () => {
 
             {/* Second row: Designation and Disposition */}
             <div className="form-row">
-              <div className="labell-input">
+              <div className="label-input">
                 <label>Designation:</label>
                 <input
                   type="text"
@@ -366,7 +365,7 @@ const CreateForm = () => {
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="labell-input">
+              <div className="label-input">
                 <label>Disposition:</label>
                 <select
                   name="disposition"
@@ -387,7 +386,7 @@ const CreateForm = () => {
 
             {/* Third row: Comment */}
             <div className="form-row">
-              <div className="labell-input">
+              <div className="label-input">
                 <label>Comment:</label>
                 <input
                   type="text"
@@ -398,7 +397,7 @@ const CreateForm = () => {
                 />
               </div>
 
-              <div className="labell-input">
+              <div className="label-input">
                 <label>Reminder:</label>
                 <input
                   type="datetime-local"
