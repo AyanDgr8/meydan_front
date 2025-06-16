@@ -228,7 +228,8 @@ const CreateForm = () => {
               `${process.env.REACT_APP_API_URL}/send-whatsapp`,
               {
                 customerId: response.data.customerId,
-                teamId: response.data.customer.team_id
+                teamId: response.data.customer.team_id,
+                instanceId: localStorage.getItem('instanceId') || ''
               },
               {
                 headers: {

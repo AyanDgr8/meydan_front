@@ -124,13 +124,16 @@ const Business = () => {
         setError('');
         setSuccess('');
 
-        // Validation for business_name and business_person (only alphabets, max 100 chars)
-        const nameRegex = /^[A-Za-z\s]{1,100}$/;
-        if (!nameRegex.test(formData.business_name)) {
-            setError('Business Center name must contain only alphabets and be less than 100 characters');
+        // Business name: allow letters, numbers, spaces and common symbols (&, -, ., ',', apostrophe)
+        const businessNameRegex = /^[A-Za-z0-9\s&.,'’\-]{1,100}$/;
+        // Contact person: letters and spaces only
+        const personNameRegex = /^[A-Za-z\s]{1,100}$/;
+
+        if (!businessNameRegex.test(formData.business_name)) {
+            setError('Business Center name can include letters, numbers, spaces and these symbols: & . , - \'. It must be 1–100 characters long.');
             return;
         }
-        if (!nameRegex.test(formData.business_person)) {
+        if (!personNameRegex.test(formData.business_person)) {
             setError('Contact person name must contain only alphabets and be less than 100 characters');
             return;
         }

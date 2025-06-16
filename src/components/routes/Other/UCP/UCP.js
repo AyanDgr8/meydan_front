@@ -12,7 +12,7 @@ const UCP = ({ isLoggedIn = true }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const ucpUrl = 'https://ucdemo.voicemeetme.com/ucp/login';
+  const ucpUrl = 'https://ucpmed.voicemeetme.com/ucp/login';
 
   const handleOpenPopup = () => {
     setShowPopup(true);
