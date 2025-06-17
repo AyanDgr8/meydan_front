@@ -70,7 +70,7 @@ const Business = () => {
             setBrandLimits(response.data);
         } catch (error) {
             console.error('Error fetching brand limits:', error);
-            setError('Error fetching brand limits');
+            // setError('Error fetching brand limits');
         }
     };
 

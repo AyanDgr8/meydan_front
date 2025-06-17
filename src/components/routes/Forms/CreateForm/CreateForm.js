@@ -26,6 +26,7 @@ const CreateForm = () => {
   const [formSuccess, setFormSuccess] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false); // tracks form submission state
 
   useEffect(() => {
     // Get team from URL query parameter or state
@@ -167,6 +168,7 @@ const CreateForm = () => {
     e.preventDefault();
     setError("");
     setFormSuccess(false);
+    setIsSubmitting(true);
 
     try {
       const token = localStorage.getItem('token');
@@ -271,6 +273,8 @@ const CreateForm = () => {
       }
       setFormSuccess(false);
       console.error('Error creating record:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -428,7 +432,8 @@ const CreateForm = () => {
           )}
 
           <div className="buttonn-container">
-            <button type="submit" className="submit-buttonn">
+            <button type="submit" className="submit-buttonn" disabled={isSubmitting}>
+              {isSubmitting && <i className="fas fa-sync fa-spin" style={{ marginRight: '6px' }}></i>}
               Create Record
             </button>
           </div>

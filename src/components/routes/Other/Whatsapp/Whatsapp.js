@@ -254,7 +254,7 @@ const WhatsAppScanner = () => {
                 {status === 'reconnecting' && (
                     <div className="status-message reconnecting">
                         <i className="fas fa-sync fa-spin"></i>
-                        Reconnecting to WhatsApp...
+                        Connecting to WhatsApp...
                     </div>
                 )}
                 
