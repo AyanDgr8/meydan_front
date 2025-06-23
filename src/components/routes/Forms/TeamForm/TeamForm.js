@@ -17,6 +17,7 @@ const TeamForm = () => {
     const [memberFormData, setMemberFormData] = useState({
         username: '',
         designation: '',
+        extension: '',
         department: '',
         email: '',
         mobile_num: '',
@@ -161,6 +162,7 @@ const TeamForm = () => {
             designation: member.designation,
             department: member.department,
             email: member.email,
+            extension: member.extension,
             mobile_num: member.mobile_num,
             mobile_num_2: member.mobile_num_2 || ''
         });
@@ -172,7 +174,7 @@ const TeamForm = () => {
         setSuccess('');
 
         // Basic validation
-        if (!memberFormData.username || !memberFormData.email || !memberFormData.mobile_num) {
+        if (!memberFormData.username || !memberFormData.email || !memberFormData.mobile_num || !memberFormData.extension) {
             setError('Please fill in all required fields');
             return;
         }
@@ -265,6 +267,7 @@ const TeamForm = () => {
         setMemberFormData({
             username: '',
             designation: '',
+            extension: '',
             department: '',
             email: '',
             mobile_num: '',
@@ -396,6 +399,23 @@ const TeamForm = () => {
                                     </div>
                                 </div>
                                 <div className="form-groupppp">
+                                    <label htmlFor="extension">Extension:</label>
+                                    <div className="input-container">
+                                        <input
+                                            type="text"
+                                            id="extension"
+                                            name="extension"
+                                            value={memberFormData.extension}
+                                            onChange={handleInputChange}
+                                            placeholder="Extension *"
+                                            className={error ? 'error' : ''}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="form-rowww">
+                                <div className="form-groupppp">
                                     <label htmlFor="mobile_num">Mobile Number:</label>
                                     <div className="input-container">
                                         <input
@@ -410,8 +430,6 @@ const TeamForm = () => {
                                         />
                                     </div>
                                 </div>
-                            </div>
-                            <div className="form-rowww">
                                 <div className="form-groupppp">
                                     <label htmlFor="mobile_num_2">Alternative Mobile:</label>
                                     <div className="input-container">

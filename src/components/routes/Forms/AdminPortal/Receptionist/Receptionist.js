@@ -11,6 +11,7 @@ const Receptionist = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [editingReceptionist, setEditingReceptionist] = useState(null);
     const [brandLimits, setBrandLimits] = useState(null);
@@ -20,6 +21,7 @@ const Receptionist = () => {
         receptionist_name: '',
         receptionist_phone: '',
         receptionist_email: '',
+        rec_password: '',
         business_center_id: '',
         rec_other_detail: ''
     });
@@ -149,6 +151,7 @@ const Receptionist = () => {
             receptionist_name: receptionist.receptionist_name,
             receptionist_phone: receptionist.receptionist_phone,
             receptionist_email: receptionist.receptionist_email,
+            rec_password: receptionist.rec_password,
             business_center_id: receptionist.business_center_id,
             rec_other_detail: receptionist.rec_other_detail || ''
         });
@@ -204,11 +207,13 @@ const Receptionist = () => {
             receptionist_name: '',
             receptionist_phone: '',
             receptionist_email: '',
+            rec_password: '',
             business_center_id: '',
             rec_other_detail: ''
         });
         setEditingReceptionist(null);
         setShowForm(false);
+        setShowPassword(false);
     };
 
     return (
@@ -277,6 +282,29 @@ const Receptionist = () => {
                                 />
                             </div>
                         </div>
+
+
+                        <div className="form-groupppp">
+                            <label htmlFor="rec_password">Password:</label>
+                            <div className="input-container">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    id="rec_password"
+                                    name="rec_password"
+                                    value={formData.rec_password}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                                <button 
+                                    type="button" 
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                    <i className={`fas fa-eye${showPassword ? '-slash' : ''}`}></i>
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="form-groupppp">
                             <label htmlFor="receptionist_phone">Phone:</label>
                             <div className="input-container">

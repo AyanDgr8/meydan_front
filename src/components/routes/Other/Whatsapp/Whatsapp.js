@@ -28,7 +28,8 @@ const WhatsAppScanner = () => {
     const [status, setStatus] = useState('disconnected');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [isMinimized, setIsMinimized] = useState(false);
+    const [isMinimized, setIsMinimized] = useState(true); // Start minimized by default
+    const [isVisible, setIsVisible] = useState(false); // Control overall visibility
     const [lastQrUpdate, setLastQrUpdate] = useState(0);
     const [lastInitAttempt, setLastInitAttempt] = useState(0);
     const QR_REFRESH_THRESHOLD = 10000; // 10 seconds
@@ -51,6 +52,72 @@ const WhatsAppScanner = () => {
             const token = localStorage.getItem('token');
             console.log('JWT Token:', token);
             const deviceId = localStorage.getItem('deviceId') || getDeviceIdFromToken(token);
+            
+            if (!token) {
+                setError('No authentication token found. Please log in again.');
+                setStatus('disconnected');
+                setQrCode('');
+                return;
+            }
+            
+            const apiUrl = process.env.REACT_APP_API_URL;
+            console.log('Initializing WhatsApp with API URL:', apiUrl);
+            
+            // First check if user already has an instance
+            try {
+                const decoded = jwtDecode(token);
+                const userEmail = decoded.email || decoded.id;
+                
+                if (userEmail) {
+                    console.log('Checking for existing instances for user:', userEmail);
+                    // Get user instances from the backend
+                    const instancesResponse = await axios.get(`${apiUrl}/instances/${userEmail}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'x-device-id': deviceId
+                        }
+                    });
+                    console.log('Instances response:', instancesResponse.data);
+                    if (instancesResponse.data.success && instancesResponse.data.instances.length > 0) {
+                        // Use the first instance from the backend
+                        const backendInstance = instancesResponse.data.instances[0];
+                        const backendInstanceId = backendInstance.instance_id;
+                        
+                        console.log('Using existing instance ID from backend:', backendInstanceId);
+                        setInstanceId(backendInstanceId);
+                        localStorage.setItem('instanceId', backendInstanceId);
+                        
+                        // Now initialize with the correct instance ID
+                        const initResponse = await axios.get(`${apiUrl}/whatsapp/init/${backendInstanceId}`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'x-device-id': deviceId
+                            }
+                        });
+                        
+                        if (initResponse.data.success) {
+                            if (initResponse.data.qrCode) {
+                                setQrCode(initResponse.data.qrCode);
+                                setLastQrUpdate(Date.now());
+                                setStatus('waiting_for_scan');
+                            } else if (initResponse.data.connected || initResponse.data.status === 'connected') {
+                                setStatus('connected');
+                                setQrCode('');
+                            } else {
+                                setStatus(initResponse.data.status || 'disconnected');
+                            }
+                        } else {
+                            setError(initResponse.data.message || 'Failed to initialize WhatsApp');
+                        }
+                        return;
+                    }
+                }
+            } catch (instanceError) {
+                console.error('Error fetching instances:', instanceError);
+                // Continue with the fallback approach if fetching instances fails
+            }
+            
+            // Fallback to using the stored or generated instance ID
             const currentInstanceId = localStorage.getItem('instanceId');
             if (!currentInstanceId) {
                 setError('No WhatsApp instance ID found. Please log in again.');
@@ -58,14 +125,8 @@ const WhatsAppScanner = () => {
                 setQrCode('');
                 return;
             }
-            if (!token) {
-                setError('No authentication token found. Please log in again.');
-                setStatus('disconnected');
-                setQrCode('');
-                return;
-            }
-            const apiUrl = `${process.env.REACT_APP_API_URL}`;
-            console.log('Initializing WhatsApp with API URL:', apiUrl);
+            
+            console.log('Falling back to stored instance ID:', currentInstanceId);
             const initResponse = await axios.get(`${apiUrl}/whatsapp/init/${currentInstanceId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -92,6 +153,23 @@ const WhatsAppScanner = () => {
             console.error('Error:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleInitResponse = (initResponse) => {
+        if (initResponse.data.success) {
+            if (initResponse.data.qrCode) {
+                setQrCode(initResponse.data.qrCode);
+                setLastQrUpdate(Date.now());
+                setStatus('waiting_for_scan');
+            } else if (initResponse.data.connected || initResponse.data.status === 'connected') {
+                setStatus('connected');
+                setQrCode('');
+            } else {
+                setStatus(initResponse.data.status || 'disconnected');
+            }
+        } else {
+            setError(initResponse.data.message || 'Failed to initialize WhatsApp');
         }
     };
 
@@ -191,13 +269,28 @@ const WhatsAppScanner = () => {
     };
 
     useEffect(() => {
-        initializeWhatsApp();
-        const statusInterval = setInterval(checkConnectionStatus, 5000); // 5 seconds
-        return () => clearInterval(statusInterval);
-    }, [checkConnectionStatus]);
+        // Only initialize WhatsApp when the component becomes visible
+        if (isVisible) {
+            initializeWhatsApp();
+            const statusInterval = setInterval(checkConnectionStatus, 5000); // 5 seconds
+            return () => clearInterval(statusInterval);
+        }
+    }, [isVisible, checkConnectionStatus]);
 
     const toggleMinimize = () => {
         setIsMinimized(!isMinimized);
+        // When maximizing, ensure the component is visible
+        if (isMinimized) {
+            setIsVisible(true);
+        }
+    };
+
+    const toggleVisibility = () => {
+        setIsVisible(!isVisible);
+        // When making visible, ensure it's not minimized
+        if (!isVisible) {
+            setIsMinimized(false);
+        }
     };
 
     function getDeviceIdFromToken(token) {
@@ -208,6 +301,17 @@ const WhatsAppScanner = () => {
             console.error('Failed to decode token for device ID:', e);
             return '';
         }
+    }
+
+    // Always show the icon, but only render the full component when visible
+    if (!isVisible) {
+        return (
+            <div className="whatsapp-icon-container" onClick={toggleVisibility}>
+                <div className="whatsapp-icon">
+                    <i className="fab fa-whatsapp"></i>
+                </div>
+            </div>
+        );
     }
 
     if (isMinimized) {
@@ -223,9 +327,14 @@ const WhatsAppScanner = () => {
             <div className="whatsapp-scanner-card">
                 <div className="whatsapp-header">
                     <h2>WhatsApp Connection</h2>
-                    <button className="minimize-button" onClick={toggleMinimize}>
-                        <i className="fas fa-minus"></i>
-                    </button>
+                    <div className="headerrr-buttons">
+                        <button className="minimize-button" onClick={toggleMinimize}>
+                            <i className="fas fa-minus"></i>
+                        </button>
+                        {/* <button className="close-button" onClick={toggleVisibility}>
+                            {/* <i className="fas fa-times"></i> 
+                        </button> */}
+                    </div>
                 </div>
 
                 {error && <div className="error-message">{error}</div>}

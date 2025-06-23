@@ -1,7 +1,10 @@
+/* src/components/routes/Other/Whatsapp/Whatsapp.css */
+
 .whatsapp-scanner-container {
   position: fixed;
-  bottom: 50px;
-  left: 20px;
+  bottom: 20px;
+  right: 20px;
+  left: auto;
   z-index: 1000;
 }
 
@@ -24,7 +27,12 @@
 .whatsapp-header h2 {
   margin: 0;
   color: #333;
-  font-size: 18px;
+  font-size: 16px;
+}
+
+.headerrr-buttons {
+  display: flex;
+  gap: 5px;
 }
 
 .minimize-button {
@@ -37,15 +45,47 @@
 }
 
 .minimize-button:hover {
-  color: #333;
+  color: #e53e3e;
+  transform: scale(1.1);
+}
+
+.whatsapp-icon-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  left: auto;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.whatsapp-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #25d366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+}
+
+.whatsapp-icon:hover {
+  transform: scale(1.1);
+}
+
+.whatsapp-icon i {
+  color: white;
+  font-size: 28px;
 }
 
 .whatsapp-minimized {
   position: fixed;
-  bottom: 10px;
-  left: 125px;
-  width: 40px;
-  height: 40px;
+  bottom: 20px;
+  right: 20px;
+  left: auto;
+  width: 50px;
+  height: 50px;
   background-color: #25d366;
   border-radius: 50%;
   display: flex;

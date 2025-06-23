@@ -24,6 +24,7 @@ import Receptionist from "./AdminPortal/Receptionist/Receptionist";
 import Center from "./AdminPortal/Business/Center";
 import Dashboard from "../Dashboard/Dashboard";
 // import FirstReception from "../Dashboard/FirstReception";
+import Reports from "../Other/Reports/Reports.js";
 
 // AdminRoute component to protect admin-only routes
 const AdminRoute = ({ children }) => {
@@ -180,6 +181,14 @@ const ZForm = () => {
             {/* Dashboard routes */}
             <Route path="/dashboard/team/:teamName/:phone_no_primary" element={<UseForm />} />
             <Route path="/dashboard/customer/:id" element={<UseForm />} />
+            
+            {/* Email Reports */}
+            <Route path="/reports" element={
+                <BrandRoute>
+                    <Reports />
+                </BrandRoute>
+            } />
+            
             {/* ********************************* */}
         </Routes>
     );

@@ -36,6 +36,7 @@ const Center = () => {
     const [newUser, setNewUser] = useState({
         username: '',
         department: '',
+        extension: '',
         email: '',
         mobile_num: '',
         mobile_num_2: '',
@@ -45,6 +46,7 @@ const Center = () => {
     const [newAssociate, setNewAssociate] = useState({
         username: '',
         department: '',
+        extension: '',
         email: '',
         mobile_num: '',
         mobile_num_2: '',
@@ -241,6 +243,7 @@ const Center = () => {
                 setNewUser({
                     username: '',
                     department: '',
+                    extension: '',
                     email: '',
                     mobile_num: '',
                     mobile_num_2: '',
@@ -342,7 +345,7 @@ const Center = () => {
     const handleCreateAssociate = async () => {
         try {
             // Validate required fields
-            const requiredFields = ['username', 'email', 'mobile_num', 'team_id'];
+            const requiredFields = ['username', 'email', 'mobile_num', 'team_id', 'extension'];
             const errors = {};
             requiredFields.forEach(field => {
                 if (!newAssociate[field]) {
@@ -372,6 +375,7 @@ const Center = () => {
                 setNewAssociate({
                     username: '',
                     department: '',
+                    extension: '',
                     email: '',
                     mobile_num: '',
                     mobile_num_2: '',
@@ -802,7 +806,7 @@ const Center = () => {
                                                     id="username"
                                                     value={newAssociate.username}
                                                     onChange={(e) => handleAssociateInputChange('username', e.target.value)}
-                                                    placeholder="Enter name"
+                                                    placeholder="Enter name *"
                                                     className={fieldErrors.username ? 'error' : ''}
                                                 />
                                                 {fieldErrors.username && <span className="error-message">{fieldErrors.username}</span>}
@@ -816,7 +820,7 @@ const Center = () => {
                                                     id="email"
                                                     value={newAssociate.email}
                                                     onChange={(e) => handleAssociateInputChange('email', e.target.value)}
-                                                    placeholder="Email"
+                                                    placeholder="Email *"
                                                     className={fieldErrors.email ? 'error' : ''}
                                                 />
                                                 {fieldErrors.email && <span className="error-message">{fieldErrors.email}</span>}
@@ -834,6 +838,21 @@ const Center = () => {
                                                     className={fieldErrors.mobile_num ? 'error' : ''}
                                                 />
                                                 {fieldErrors.mobile_num && <span className="error-message">{fieldErrors.mobile_num}</span>}
+                                            </div>
+                                        </div>
+
+                                        <div className="form-groupppp">
+                                            <label htmlFor="extension">Extension Num:</label>
+                                            <div className="input-container">
+                                                <input
+                                                    type="text"
+                                                    id="extension"
+                                                    value={newAssociate.extension}
+                                                    onChange={(e) => handleAssociateInputChange('extension', e.target.value)}
+                                                    placeholder="Extension Number *"
+                                                    className={fieldErrors.extension ? 'error' : ''}
+                                                />
+                                                {fieldErrors.extension && <span className="error-message">{fieldErrors.extension}</span>}
                                             </div>
                                         </div>
                                     </div>
@@ -917,6 +936,7 @@ const Center = () => {
                             </div>
                         ))}
                     </div> */}
+                    
                 </div>
             )}
         </div>
