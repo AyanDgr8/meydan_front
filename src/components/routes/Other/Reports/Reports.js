@@ -148,7 +148,7 @@ const Reports = () => {
           onChange={e => setReportType(e.target.value)}
           style={{ padding: '0.25rem' }}
         >
-          <option value="inbound">Inbound Calls</option>
+         {/* <option value="inbound">Inbound Calls</option> */}
           <option value="outbound">Outbound Calls</option>
           <option value="charges">User Charges</option>
         </select>

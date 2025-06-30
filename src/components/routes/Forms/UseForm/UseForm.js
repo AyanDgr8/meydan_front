@@ -359,6 +359,21 @@ const UseForm = () => {
                 config: error.config
             });
 
+            // If backend indicates no actual changes, treat as success and simply navigate away
+            if (
+                error.response?.status === 400 &&
+                typeof error.response?.data?.details === 'string' &&
+                error.response.data.details.includes('identical')
+            ) {
+                // Consider this a successful "no-op" update
+                const teamName = teamNameFromURL || queueNameFromState || teamNameFromStorage || formData.QUEUE_NAME;
+                if (teamName) {
+                    navigate(`/customers/search?team=${teamName}`);
+                }
+                setLoading(false);
+                return; // do not show error
+            }
+
             if (error.response?.data?.details) {
                 setError(error.response.data.details);
             } else if (error.response?.data?.error) {

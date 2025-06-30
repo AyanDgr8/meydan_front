@@ -155,7 +155,7 @@ const Reminder = () => {
     };
 
     const handleReminderClick = (reminder) => {
-        navigate(`/dashboard/customers/search?team=${reminder.QUEUE_NAME}`, {
+        navigate(`/customers/phone/${reminder.phone_no_primary}`, {
             state: { customer: reminder }
         });
     };

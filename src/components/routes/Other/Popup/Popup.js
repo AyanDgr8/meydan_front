@@ -15,7 +15,8 @@ const Popup = () => {
         // First remove the popup
         removePopupMessage(index);
         
-        // Then navigate to the customer record
+        // Navigate to UseForm without embedding stale customer data.
+        // UseForm will fetch the freshest record from the server using the phone number.
         navigate(`/customers/phone/${customer.phone_no_primary}`, { 
             state: { 
                 customer: customer,
